@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { use, useMemo, useState } from "react";
 import { berlinListings, districtRentBenchmarkPerM2 } from "@/lib/data";
 import { calculatePriceAssessment } from "@/lib/scoring";
 import Link from "next/link";
@@ -11,14 +11,11 @@ interface ListingDetailPageProps {
 
 export default function ListingDetailPage({ params }: ListingDetailPageProps) {
     const [showApplyModal, setShowApplyModal] = useState(false);
-    const resolvedParams = useMemo(() => {
-        // Will be populated by useEffect in real usage, but for now use placeholder
-        return { id: "l-1001" };
-    }, []);
+    const { id } = use(params);
 
     const listing = useMemo(() => {
-        return berlinListings.find((l) => l.id === resolvedParams.id) || berlinListings[0];
-    }, [resolvedParams.id]);
+        return berlinListings.find((l) => l.id === id) || berlinListings[0];
+    }, [id]);
 
     const priceAssessment = useMemo(() => {
         return calculatePriceAssessment(listing);
@@ -165,11 +162,10 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
                                         </span>
                                     </p>
                                 </div>
-                                <div className={`rounded-full px-4 py-2 text-sm font-medium ${
-                                    priceAssessment.isOverpriced
+                                <div className={`rounded-full px-4 py-2 text-sm font-medium ${priceAssessment.isOverpriced
                                         ? "bg-red-100 text-red-700"
                                         : "bg-green-100 text-green-700"
-                                }`}>
+                                    }`}>
                                     {priceAssessment.isOverpriced ? "Overpriced" : "Good Deal"}
                                 </div>
                             </div>
