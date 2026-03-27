@@ -23,12 +23,19 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
+  "engines": {
+    "node": ">=21.0.0"
+  },
   "dependencies": {
+    "@fastify/schedule": "^6.0.0",
     "@prisma/adapter-pg": "^7.6.0",
     "@prisma/client": "^7.6.0",
+    "cheerio": "^1.2.0",
     "dotenv": "^17.3.1",
     "fastify": "^5.8.4",
-    "pg": "^8.20.0"
+    "pg": "^8.20.0",
+    "playwright": "^1.58.2",
+    "toad-scheduler": "^3.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -1,6 +1,8 @@
 import Fastify from 'fastify'
 import type { FastifyInstance } from 'fastify'
 import healthRoutes from './api/health/health.routes'
+import scraperRoutes from './api/scraper/scraper.routes'
+import { scraperSchedulerPlugin } from './features/scraper/scraper-scheduler.plugin'
 import { sharedMiddleware } from './shared/middleware/index'
 
 export async function buildApp(): Promise<FastifyInstance> {
@@ -9,9 +11,12 @@ export async function buildApp(): Promise<FastifyInstance> {
   // Cross-cutting middleware: request ID, response time
   app.register(sharedMiddleware)
 
-  // API routes — each resource is registered under its own prefix
+  // Scheduler plugin: registers @fastify/schedule + wires up cron jobs for all scrapers
+  await app.register(scraperSchedulerPlugin)
+
+  // API routes
   await app.register(healthRoutes)
-  // Future: await app.register(propertyRoutes, { prefix: '/api/v1/properties' })
+  await app.register(scraperRoutes, { prefix: '/api/v1/scrapers' })
 
   return app
 }
