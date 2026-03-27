@@ -157,8 +157,8 @@ export default function TrackerPage() {
             </section>
 
             {/* Pipeline View */}
-            <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
-                <h2 className="mb-4 text-lg font-semibold">Application Pipeline</h2>
+            <section className="ds-card p-6">
+                <h2 className="text-title mb-4 text-on-background">Application Pipeline</h2>
                 <div className="overflow-x-auto">
                     <div className="flex min-w-max gap-4">
                         {Object.entries(statusConfig).map(([status, config]) => {
@@ -167,11 +167,11 @@ export default function TrackerPage() {
                             return (
                                 <div
                                     key={status}
-                                    className="w-48 shrink-0 rounded-xl bg-black/5 p-3"
+                                    className="w-48 shrink-0 rounded-xl bg-surface-low p-3"
                                 >
                                     <div className="mb-3 flex items-center justify-between">
-                                        <span className="text-sm font-semibold">{config.label}</span>
-                                        <span className="rounded-full bg-black/10 px-2 py-0.5 text-xs">
+                                        <span className="text-sm font-semibold text-on-background">{config.label}</span>
+                                        <span className="rounded-full bg-surface-high px-2 py-0.5 text-xs text-muted">
                                             {appsInStatus.length}
                                         </span>
                                     </div>
@@ -180,11 +180,11 @@ export default function TrackerPage() {
                                             <button
                                                 key={app.id}
                                                 onClick={() => setSelectedApp(app)}
-                                                className="w-full rounded-lg border border-black/10 bg-white p-2 text-left text-sm transition hover:border-black hover:shadow-sm"
+                                                className="ds-card w-full p-2 text-left text-sm"
                                             >
-                                                <p className="font-medium line-clamp-1">{app.title}</p>
-                                                <p className="text-xs text-black/60">{app.district}</p>
-                                                <p className="text-xs font-medium">€{app.rent}</p>
+                                                <p className="font-medium text-on-background line-clamp-1">{app.title}</p>
+                                                <p className="text-xs text-muted">{app.district}</p>
+                                                <p className="text-xs font-medium text-primary">€{app.rent}</p>
                                             </button>
                                         ))}
                                     </div>
@@ -196,9 +196,9 @@ export default function TrackerPage() {
             </section>
 
             {/* Applications List */}
-            <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
+            <section className="ds-card p-6">
                 <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-lg font-semibold">All Applications</h2>
+                    <h2 className="text-title text-on-background">All Applications</h2>
                     <div className="flex gap-2">
                         <FilterButton active={filter === "all"} onClick={() => setFilter("all")}>
                             All
@@ -217,18 +217,18 @@ export default function TrackerPage() {
                         <div
                             key={app.id}
                             onClick={() => setSelectedApp(app)}
-                            className="flex cursor-pointer items-center justify-between rounded-xl border border-black/10 bg-white p-4 transition hover:border-black hover:shadow-sm"
+                            className="ds-card flex cursor-pointer items-center justify-between p-4"
                         >
                             <div className="flex items-center gap-4">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-black/10 text-2xl">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-low text-2xl">
                                     🏠
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold">{app.title}</h3>
-                                    <p className="text-sm text-black/60">
+                                    <h3 className="font-semibold text-on-background">{app.title}</h3>
+                                    <p className="text-sm text-muted">
                                         {app.district} · {app.rooms} rooms · {app.size}m²
                                     </p>
-                                    <p className="text-xs text-black/50">
+                                    <p className="text-xs text-muted">
                                         Applied {formatDate(app.appliedDate)} · {app.landlordName}
                                     </p>
                                 </div>
@@ -240,7 +240,7 @@ export default function TrackerPage() {
                                     <span>{statusConfig[app.status].icon}</span>
                                     <span className="hidden md:inline">{statusConfig[app.status].label}</span>
                                 </span>
-                                <span className="text-lg font-bold">€{app.rent}</span>
+                                <span className="text-lg font-bold text-on-background">€{app.rent}</span>
                             </div>
                         </div>
                     ))}
@@ -248,8 +248,8 @@ export default function TrackerPage() {
             </section>
 
             {/* Timeline Activity */}
-            <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
-                <h2 className="mb-4 text-lg font-semibold">Recent Activity</h2>
+            <section className="ds-section">
+                <h2 className="text-title mb-4 text-on-background">Recent Activity</h2>
                 <div className="space-y-4">
                     <TimelineItem
                         icon="📅"
@@ -281,21 +281,21 @@ export default function TrackerPage() {
             {/* Detail Modal */}
             {selectedApp && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-on-background/40 p-4"
                     onClick={() => setSelectedApp(null)}
                 >
                     <div
-                        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6"
+                        className="ds-card w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="mb-4 flex items-start justify-between">
                             <div>
-                                <h2 className="text-xl font-bold">{selectedApp.title}</h2>
-                                <p className="text-sm text-black/60">{selectedApp.address}</p>
+                                <h2 className="text-xl font-bold text-on-background">{selectedApp.title}</h2>
+                                <p className="text-sm text-muted">{selectedApp.address}</p>
                             </div>
                             <button
                                 onClick={() => setSelectedApp(null)}
-                                className="rounded-lg p-2 hover:bg-black/5"
+                                className="rounded-lg p-2 hover:bg-surface-low"
                             >
                                 ✕
                             </button>
@@ -344,20 +344,20 @@ export default function TrackerPage() {
                         )}
 
                         <div className="mt-4">
-                            <h3 className="font-semibold">Notes</h3>
-                            <p className="mt-2 text-sm text-black/70">{selectedApp.notes}</p>
+                            <h3 className="font-semibold text-on-background">Notes</h3>
+                            <p className="mt-2 text-sm text-muted">{selectedApp.notes}</p>
                         </div>
 
                         <div className="mt-6 flex gap-3">
                             <Link
                                 href={`/listings/${selectedApp.listingId}`}
-                                className="flex-1 rounded-xl border border-black/20 px-4 py-2 text-center font-medium transition hover:bg-black/5"
+                                className="btn-secondary flex-1 inline-flex items-center justify-center"
                             >
                                 View Listing
                             </Link>
                             <Link
                                 href={`/apply/${selectedApp.listingId}?step=review`}
-                                className="flex-1 rounded-xl bg-black px-4 py-2 text-center font-medium text-white"
+                                className="btn-primary flex-1 inline-flex items-center justify-center"
                             >
                                 Edit Application
                             </Link>
@@ -381,18 +381,17 @@ function StatCard({
     color?: string;
 }) {
     return (
-        <div className="rounded-2xl border border-black/10 bg-white p-4 shadow-sm">
+        <div className="ds-card p-4">
             <div className="flex items-center justify-between">
                 <div>
-                    <p className="text-sm text-black/60">{label}</p>
-                    <p className="mt-1 text-3xl font-bold">{value}</p>
+                    <p className="text-sm text-muted">{label}</p>
+                    <p className="mt-1 text-3xl font-bold text-on-background">{value}</p>
                 </div>
-                <div className={`flex h-12 w-12 items-center justify-center rounded-xl text-2xl ${
-                    color === "blue" ? "bg-blue-100" :
-                    color === "yellow" ? "bg-yellow-100" :
-                    color === "purple" ? "bg-purple-100" :
-                    "bg-black/10"
-                }`}>
+                <div className={`flex h-12 w-12 items-center justify-center rounded-xl text-2xl ${color === "blue" ? "bg-secondary-fixed" :
+                        color === "yellow" ? "bg-yellow-100" :
+                            color === "purple" ? "bg-purple-100" :
+                                "bg-surface-low"
+                    }`}>
                     {icon}
                 </div>
             </div>
@@ -412,11 +411,10 @@ function FilterButton({
     return (
         <button
             onClick={onClick}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
-                active
-                    ? "bg-black text-white"
-                    : "border border-black/20 bg-white hover:bg-black/5"
-            }`}
+            className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${active
+                    ? "bg-primary text-white"
+                    : "bg-surface-card ghost-border hover:bg-surface-low"
+                }`}
         >
             {children}
         </button>
@@ -436,13 +434,13 @@ function TimelineItem({
 }) {
     return (
         <div className="flex gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-black/10">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-low">
                 {icon}
             </div>
             <div className="flex-1">
-                <p className="font-medium">{title}</p>
-                <p className="text-sm text-black/60">{description}</p>
-                <p className="text-xs text-black/40">{time}</p>
+                <p className="font-medium text-on-background">{title}</p>
+                <p className="text-sm text-muted">{description}</p>
+                <p className="text-xs text-muted">{time}</p>
             </div>
         </div>
     );
@@ -450,9 +448,9 @@ function TimelineItem({
 
 function InfoCard({ label, value }: { label: string; value: string }) {
     return (
-        <div className="rounded-xl border border-black/10 bg-black/5 p-3 text-center">
-            <p className="text-xs text-black/60">{label}</p>
-            <p className="mt-1 text-lg font-bold">{value}</p>
+        <div className="rounded-xl bg-surface-low p-3 text-center">
+            <p className="text-label text-muted">{label}</p>
+            <p className="mt-1 text-lg font-bold text-on-background">{value}</p>
         </div>
     );
 }

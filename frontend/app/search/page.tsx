@@ -139,12 +139,12 @@ export default function SearchPage() {
             </section>
 
             {/* Filters */}
-            <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
+            <section className="ds-section">
                 <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-lg font-semibold">Filters</h2>
+                    <h2 className="text-title text-on-background">Filters</h2>
                     <button
                         onClick={clearFilters}
-                        className="text-sm text-black/60 underline hover:text-black"
+                        className="text-sm text-primary hover:text-primary-hover"
                     >
                         Clear all
                     </button>
@@ -153,11 +153,11 @@ export default function SearchPage() {
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     {/* District */}
                     <div>
-                        <label className="mb-1 block text-sm font-medium">District</label>
+                        <label className="text-label mb-1 block text-muted">District</label>
                         <select
                             value={filters.district}
                             onChange={(e) => setFilters({ ...filters, district: e.target.value })}
-                            className="w-full rounded-xl border border-black/20 px-3 py-2.5"
+                            className="ds-input w-full"
                         >
                             <option value="">All districts</option>
                             {allDistricts.map((d) => (
@@ -168,53 +168,53 @@ export default function SearchPage() {
 
                     {/* Price Range */}
                     <div>
-                        <label className="mb-1 block text-sm font-medium">Price Range (EUR)</label>
+                        <label className="text-label mb-1 block text-muted">Price Range (EUR)</label>
                         <div className="flex gap-2">
                             <input
                                 type="number"
                                 value={filters.minPrice}
                                 onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })}
                                 placeholder="Min"
-                                className="w-full rounded-xl border border-black/20 px-3 py-2.5"
+                                className="ds-input w-full"
                             />
                             <input
                                 type="number"
                                 value={filters.maxPrice}
                                 onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })}
                                 placeholder="Max"
-                                className="w-full rounded-xl border border-black/20 px-3 py-2.5"
+                                className="ds-input w-full"
                             />
                         </div>
                     </div>
 
                     {/* Size Range */}
                     <div>
-                        <label className="mb-1 block text-sm font-medium">Size (m²)</label>
+                        <label className="text-label mb-1 block text-muted">Size (m²)</label>
                         <div className="flex gap-2">
                             <input
                                 type="number"
                                 value={filters.minSize}
                                 onChange={(e) => setFilters({ ...filters, minSize: e.target.value })}
                                 placeholder="Min"
-                                className="w-full rounded-xl border border-black/20 px-3 py-2.5"
+                                className="ds-input w-full"
                             />
                             <input
                                 type="number"
                                 value={filters.maxSize}
                                 onChange={(e) => setFilters({ ...filters, maxSize: e.target.value })}
                                 placeholder="Max"
-                                className="w-full rounded-xl border border-black/20 px-3 py-2.5"
+                                className="ds-input w-full"
                             />
                         </div>
                     </div>
 
                     {/* Rooms */}
                     <div>
-                        <label className="mb-1 block text-sm font-medium">Rooms</label>
+                        <label className="text-label mb-1 block text-muted">Rooms</label>
                         <select
                             value={filters.rooms}
                             onChange={(e) => setFilters({ ...filters, rooms: e.target.value })}
-                            className="w-full rounded-xl border border-black/20 px-3 py-2.5"
+                            className="ds-input w-full"
                         >
                             <option value="">Any</option>
                             <option value="1">1+ room</option>
@@ -226,11 +226,11 @@ export default function SearchPage() {
 
                     {/* Source */}
                     <div>
-                        <label className="mb-1 block text-sm font-medium">Source</label>
+                        <label className="text-label mb-1 block text-muted">Source</label>
                         <select
                             value={filters.source}
                             onChange={(e) => setFilters({ ...filters, source: e.target.value })}
-                            className="w-full rounded-xl border border-black/20 px-3 py-2.5"
+                            className="ds-input w-full"
                         >
                             <option value="">All sources</option>
                             {allSources.map((s) => (
@@ -243,11 +243,11 @@ export default function SearchPage() {
 
                     {/* Max Commute */}
                     <div>
-                        <label className="mb-1 block text-sm font-medium">Max Commute (min)</label>
+                        <label className="text-label mb-1 block text-muted">Max Commute (min)</label>
                         <select
                             value={filters.maxCommute}
                             onChange={(e) => setFilters({ ...filters, maxCommute: e.target.value })}
-                            className="w-full rounded-xl border border-black/20 px-3 py-2.5"
+                            className="ds-input w-full"
                         >
                             <option value="">Any</option>
                             <option value="15">15 min</option>
@@ -259,11 +259,11 @@ export default function SearchPage() {
 
                     {/* Sort */}
                     <div>
-                        <label className="mb-1 block text-sm font-medium">Sort by</label>
+                        <label className="text-label mb-1 block text-muted">Sort by</label>
                         <select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                            className="w-full rounded-xl border border-black/20 px-3 py-2.5"
+                            className="ds-input w-full"
                         >
                             <option value="relevance">Relevance</option>
                             <option value="price_asc">Price: Low to High</option>
@@ -276,17 +276,16 @@ export default function SearchPage() {
 
                 {/* Vibe Tags */}
                 <div className="mt-4">
-                    <label className="mb-2 block text-sm font-medium">Vibe & Lifestyle</label>
+                    <label className="text-label mb-2 block text-muted">Vibe & Lifestyle</label>
                     <div className="flex flex-wrap gap-2">
                         {allVibeTags.map((tag) => (
                             <button
                                 key={tag}
                                 onClick={() => toggleVibeTag(tag)}
-                                className={`rounded-full px-4 py-1.5 text-sm transition ${
-                                    filters.vibeTags.includes(tag)
-                                        ? "bg-black text-white"
-                                        : "border border-black/20 bg-white hover:bg-black/5"
-                                }`}
+                                className={`rounded-full px-4 py-1.5 text-sm transition ${filters.vibeTags.includes(tag)
+                                        ? "bg-primary text-white"
+                                        : "bg-surface-card ghost-border hover:bg-surface-high"
+                                    }`}
                             >
                                 {tag}
                             </button>
@@ -296,15 +295,15 @@ export default function SearchPage() {
             </section>
 
             {/* Results */}
-            <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
-                <h2 className="mb-4 text-lg font-semibold">Search Results</h2>
+            <section className="ds-card p-6">
+                <h2 className="text-title mb-4 text-on-background">Search Results</h2>
 
                 {filteredListings.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
-                        <p className="text-black/60">No listings match your filters</p>
+                        <p className="text-muted">No listings match your filters</p>
                         <button
                             onClick={clearFilters}
-                            className="mt-3 text-sm text-black underline"
+                            className="mt-3 text-sm text-primary hover:text-primary-hover"
                         >
                             Clear filters and try again
                         </button>
@@ -315,9 +314,9 @@ export default function SearchPage() {
                             <a
                                 key={listing.id}
                                 href={`/listings/${listing.id}`}
-                                className="group rounded-xl border border-black/15 bg-white p-4 transition hover:border-black hover:shadow-md"
+                                className="ds-card group p-4"
                             >
-                                <div className="aspect-video w-full overflow-hidden rounded-lg bg-black/10">
+                                <div className="aspect-video w-full overflow-hidden rounded-xl bg-surface-low">
                                     <div className="flex h-full items-center justify-center text-4xl">
                                         🏠
                                     </div>
@@ -331,16 +330,16 @@ export default function SearchPage() {
                                             </span>
                                         )}
                                     </div>
-                                    <p className="mt-1 text-sm text-black/60">{listing.district}</p>
+                                    <p className="mt-1 text-sm text-muted">{listing.district}</p>
                                     <div className="mt-2 flex items-center justify-between">
-                                        <span className="text-lg font-bold">€{listing.monthlyRentEur}</span>
-                                        <span className="text-sm text-black/60">{listing.sizeM2}m² · {listing.rooms} rooms</span>
+                                        <span className="text-lg font-bold text-on-background">€{listing.monthlyRentEur}</span>
+                                        <span className="text-sm text-muted">{listing.sizeM2}m² · {listing.rooms} rooms</span>
                                     </div>
                                     <div className="mt-2 flex flex-wrap gap-1">
                                         {listing.vibeTags.slice(0, 3).map((tag) => (
                                             <span
                                                 key={tag}
-                                                className="rounded-full bg-black/5 px-2 py-0.5 text-xs text-black/70"
+                                                className="rounded-full bg-surface-low px-2 py-0.5 text-xs text-muted"
                                             >
                                                 {tag}
                                             </span>

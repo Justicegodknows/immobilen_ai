@@ -30,6 +30,14 @@ type TenantProfile = {
     message: string;
 };
 
+const DOC_TYPE_MAP: Record<string, string> = {
+    schufa: "schufa",
+    income: "payslip",
+    id: "id",
+    employment: "employment-proof",
+    mietschulden: "other",
+};
+
 const initialProfile: TenantProfile = {
     name: "",
     email: "",
@@ -115,6 +123,9 @@ export default function ApplyPage(_props: ApplyPageProps) {
     const [hydrated, setHydrated] = useState(false);
     const [saveFlash, setSaveFlash] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isGeneratingMessage, setIsGeneratingMessage] = useState(false);
+    const [uploadedDocIds, setUploadedDocIds] = useState<Record<string, string>>({});
+    const [isUploading, setIsUploading] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
@@ -170,14 +181,37 @@ export default function ApplyPage(_props: ApplyPageProps) {
         setProfile((prev) => ({ ...prev, [field]: value }));
     }
 
-    function handleDocUpload(docName: string) {
-        if (!uploadedDocs.includes(docName)) {
+    async function handleDocUpload(docName: string) {
+        if (uploadedDocs.includes(docName)) return;
+        setIsUploading(docName);
+        try {
+            const res = await fetch("/api/documents", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    tenantId: "tn-1001",
+                    type: DOC_TYPE_MAP[docName] || "other",
+                    fileName: `${docName}-${profile.name || "tenant"}.pdf`,
+                }),
+            });
+            if (!res.ok) throw new Error("upload-failed");
+            const data = (await res.json()) as { document: { id: string } };
+            setUploadedDocIds((prev) => ({ ...prev, [docName]: data.document.id }));
             setUploadedDocs((prev) => [...prev, docName]);
+        } catch {
+            setUploadedDocs((prev) => [...prev, docName]);
+        } finally {
+            setIsUploading(null);
         }
     }
 
     function handleDocRemove(docName: string) {
         setUploadedDocs((prev) => prev.filter((d) => d !== docName));
+        setUploadedDocIds((prev) => {
+            const next = { ...prev };
+            delete next[docName];
+            return next;
+        });
     }
 
     async function generateCoverLetter() {
@@ -222,6 +256,46 @@ ${profile.name || "[Your name]"}`);
         }
     }
 
+    async function generatePersonalMessage() {
+        setIsGeneratingMessage(true);
+        try {
+            const prompt = [
+                `Write a short personal message (3-5 sentences) from a rental applicant to a landlord.`,
+                `Apartment: "${listing.title}" in ${listing.district}, €${listing.monthlyRentEur}/month.`,
+                `Landlord: ${listing.landlordName}.`,
+                profile.name ? `Applicant name: ${profile.name}.` : "",
+                profile.occupation ? `Occupation: ${profile.occupation}.` : "",
+                profile.monthlyNetIncome ? `Monthly income: €${profile.monthlyNetIncome}.` : "",
+                profile.householdSize ? `Household size: ${profile.householdSize}.` : "",
+                profile.hasPets ? `Has pets: ${profile.petsDescription || "yes"}.` : "",
+                profile.moveInDate ? `Preferred move-in: ${profile.moveInDate}.` : "",
+                `Tone: warm, professional, concise. Mention why the applicant is a good fit.`,
+                `Output ONLY the message text, no greeting or sign-off.`,
+                `Use plain text only. No emojis or special characters. Currency signs (EUR) are allowed.`,
+            ]
+                .filter(Boolean)
+                .join(" ");
+
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ message: prompt }),
+            });
+
+            if (!res.ok) throw new Error("failed");
+
+            const data = (await res.json()) as { reply: string };
+            updateProfile("message", data.reply);
+        } catch {
+            updateProfile(
+                "message",
+                `I am very interested in your apartment in ${listing.district}. As a ${profile.occupation || "working professional"} with stable income, I am looking for a long-term home and can provide all required documents promptly. I would appreciate the opportunity to introduce myself at a viewing.`,
+            );
+        } finally {
+            setIsGeneratingMessage(false);
+        }
+    }
+
     const completionScore = useMemo(() => {
         let score = 0;
         if (profile.name) score += 10;
@@ -237,14 +311,48 @@ ${profile.name || "[Your name]"}`);
 
     async function submitApplication() {
         setIsSubmitting(true);
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        setIsSubmitting(false);
         try {
-            localStorage.removeItem(storageKey(listing.id));
+            let documentBundleId: string | undefined;
+
+            const docIds = Object.values(uploadedDocIds);
+            if (docIds.length > 0) {
+                const bundleRes = await fetch("/api/documents/bundles", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        tenantId: "tn-1001",
+                        documentIds: docIds,
+                    }),
+                });
+                if (bundleRes.ok) {
+                    const bundleData = (await bundleRes.json()) as { bundle: { id: string } };
+                    documentBundleId = bundleData.bundle.id;
+                }
+            }
+
+            const appRes = await fetch("/api/applications", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    listingId: listing.id,
+                    coverLetter,
+                    documentBundleId,
+                }),
+            });
+
+            if (appRes.ok) {
+                try {
+                    localStorage.removeItem(storageKey(listing.id));
+                } catch {
+                    /* ignore */
+                }
+            }
         } catch {
-            /* ignore */
+            /* proceed */
+        } finally {
+            setIsSubmitting(false);
+            router.push(`/apply/${listing.id}?step=submitted`);
         }
-        router.push(`/apply/${listing.id}?step=submitted`);
     }
 
     function renderStep() {
@@ -403,7 +511,17 @@ ${profile.name || "[Your name]"}`);
                 </div>
 
                 <div className="rounded-2xl bg-surface-container-low p-5 md:p-6">
-                    <h2 className="font-sans text-base font-bold text-on-background">Short note to the landlord</h2>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <h2 className="font-sans text-base font-bold text-on-background">Short note to the landlord</h2>
+                        <button
+                            type="button"
+                            onClick={generatePersonalMessage}
+                            disabled={isGeneratingMessage}
+                            className="rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-on-primary shadow-sm transition hover:bg-primary/90 disabled:opacity-50"
+                        >
+                            {isGeneratingMessage ? "Generating…" : "✨ AI Generate"}
+                        </button>
+                    </div>
                     <textarea
                         value={profile.message}
                         onChange={(e) => updateProfile("message", e.target.value)}
@@ -411,6 +529,9 @@ ${profile.name || "[Your name]"}`);
                         className="mt-3 min-h-[120px] w-full rounded-xl bg-surface-container-lowest px-4 py-3 text-sm text-on-background ring-1 ring-outline-variant/30 placeholder:text-on-surface/40 focus:outline-none focus:ring-2 focus:ring-primary/35"
                         rows={4}
                     />
+                    <p className="mt-1 text-xs text-on-surface/65">
+                        Use AI Generate for a draft from your profile, or write your own.
+                    </p>
                 </div>
             </div>
         );
@@ -456,11 +577,16 @@ ${profile.name || "[Your name]"}`);
                                     >
                                         ✓ Added — tap to remove
                                     </button>
+                                ) : isUploading === doc.id ? (
+                                    <span className="rounded-lg bg-surface-container-high px-3 py-1.5 text-sm font-medium text-on-surface/80">
+                                        Uploading…
+                                    </span>
                                 ) : (
                                     <button
                                         type="button"
-                                        onClick={() => handleDocUpload(doc.id)}
-                                        className="rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-on-primary shadow-sm transition hover:bg-primary/90"
+                                        onClick={() => void handleDocUpload(doc.id)}
+                                        disabled={isUploading !== null}
+                                        className="rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-on-primary shadow-sm transition hover:bg-primary/90 disabled:opacity-50"
                                     >
                                         Mark as ready
                                     </button>

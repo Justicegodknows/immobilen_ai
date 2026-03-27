@@ -41,6 +41,7 @@
   --color-on-primary-fixed: #002116;
   --color-on-primary-fixed-variant: #00513b;
   --color-inverse-primary: #50ddad;
+  --color-primary-hover: #00543d;
 
   --color-secondary: #0060a9;
   --color-on-secondary: #ffffff;
@@ -70,18 +71,35 @@
 
   --color-hero-dark: var(--hero-dark);
 
+  /* Aliases for listings / dashboard (main branch utilities) */
+  --color-muted: #64748b;
+  --color-surface-low: #f0f3ff;
+  --color-surface-high: #dee8ff;
+  --color-surface-card: #ffffff;
+  --color-success: #1f7a5b;
+  --color-warning: #c9972f;
+  --color-danger: #cb4d3e;
+
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
   --radius-card: 1.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
 
   --shadow-floating: 0 20px 40px -15px rgb(0 0 0 / 0.1),
     0 10px 20px -10px rgb(0 0 0 / 0.05);
   --shadow-ambient: 0 24px 48px rgb(15 27 45 / 0.07);
+  --shadow-card: 0px 8px 24px rgba(15, 27, 45, 0.04);
 }
 
 body {
   min-height: 100vh;
+  background: var(--color-surface);
+  color: var(--color-on-background);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Stitch reference: glass panels, texture overlays, brand gradient */
@@ -113,10 +131,6 @@ body {
   background: linear-gradient(180deg, #ff4d4d 0%, #3ecfa0 100%);
 }
 
-/*
-  Landing: problem → solution band — matches Stitch (stitch_aimmobilie_landing_page)
-  brand-gradient: #FF4D4D → #3ECFA0 — vibrant coral to mint, no heavy burgundy/forest.
-*/
 .problem-solution-flow {
   background: linear-gradient(
     180deg,
@@ -134,7 +148,6 @@ body {
   text-shadow: 0 1px 2px rgb(0 0 0 / 0.1);
 }
 
-/* Primary CTA: subtle vertical gradient (DESIGN.md §4) */
 .btn-primary-gradient {
   background: linear-gradient(180deg, #3ecfa0 0%, #006c4f 100%);
 }
@@ -143,7 +156,6 @@ body {
   font-variation-settings: "FILL" 0, "wght" 300, "GRAD" 0, "opsz" 24;
 }
 
-/* Scroll reveal (landing) */
 .reveal {
   opacity: 0;
   transform: translateY(24px);
@@ -155,4 +167,139 @@ body {
 .reveal.is-visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Ghost-border + dashboard utilities (main) */
+.ghost-border {
+  box-shadow: inset 0 0 0 1px var(--color-outline-variant);
+}
+
+.blob-mint {
+  background: rgba(62, 207, 160, 0.18);
+  border-radius: 9999px;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.blob-blue {
+  background: rgba(91, 168, 255, 0.15);
+  border-radius: 9999px;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.blob-rose {
+  background: rgba(255, 126, 179, 0.12);
+  border-radius: 9999px;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, #3ecfa0 0%, #006c4f 100%);
+  color: white;
+  border-radius: var(--radius-md);
+  height: 48px;
+  padding: 0 1.5rem;
+  font-weight: 600;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-ambient);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color-on-background);
+  border-radius: var(--radius-md);
+  height: 48px;
+  padding: 0 1.5rem;
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px rgba(91, 168, 255, 0.2);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.btn-secondary:hover {
+  background: rgba(91, 168, 255, 0.06);
+}
+
+.ds-input {
+  background: var(--color-surface-low);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.625rem 0.875rem;
+  color: var(--color-on-background);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.ds-input:focus {
+  outline: none;
+  background: var(--color-surface-card);
+  box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+.ds-input::placeholder {
+  color: var(--color-muted);
+}
+
+.chip-ai {
+  background: var(--color-secondary-fixed);
+  color: var(--color-on-secondary-container);
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.ds-card {
+  background: var(--color-surface-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.ds-card:hover {
+  box-shadow: var(--shadow-ambient);
+}
+
+.ds-section {
+  background: var(--color-surface-low);
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+}
+
+.glass-nav {
+  background: rgba(249, 249, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.text-display {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.text-headline {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.text-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.text-body {
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.text-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
