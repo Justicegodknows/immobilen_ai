@@ -103,7 +103,10 @@ export async function POST(request: NextRequest) {
                 "Output only the final letter body in English unless the landlord or applicant context explicitly requires German.",
                 "Keep the tone professional, warm, and factual.",
                 "Mention financial stability, document readiness, and fit for the listing.",
-                "Format output as plain text only. Do not use emojis, bullet points, or decorative special characters.",
+                "IMPORTANT: Output plain text ONLY. Never use markdown formatting.",
+                "Do not use asterisks (*), hash symbols (#), horizontal rules (---), pipe tables (|), backticks (`), or angle brackets (>).",
+                "Do not wrap words in asterisks for emphasis. Do not prefix lines with # for headings.",
+                "Do not use emojis or decorative characters.",
                 "Currency signs (EUR, $) and accounting notation (%, +, -) are allowed.",
             ].join(" "),
             prompt: [
