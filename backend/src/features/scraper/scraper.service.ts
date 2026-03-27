@@ -1,15 +1,20 @@
-import type { FastifyBaseLogger } from 'fastify'
-import type { Prisma } from '@prisma/client'
-import { getDb } from '../../database/client'
-import type { ScraperInterface, ScrapeContext, ScraperJobResult, StandardListing } from './scraper.types'
+import type { FastifyBaseLogger } from 'fastify';
+import type { Prisma } from '@prisma/client';
+import { getDb } from '../../database/client';
+import type {
+  ScraperInterface,
+  ScrapeContext,
+  ScraperJobResult,
+  StandardListing,
+} from './scraper.types';
 
 function toInputJson(data: Record<string, unknown>): Prisma.InputJsonObject {
-  return data as Prisma.InputJsonObject
+  return data as Prisma.InputJsonObject;
 }
 
 async function upsertListings(listings: StandardListing[]): Promise<number> {
-  const db = getDb()
-  let count = 0
+  const db = getDb();
+  let count = 0;
 
   for (const listing of listings) {
     await db.listing.upsert({
@@ -47,44 +52,44 @@ async function upsertListings(listings: StandardListing[]): Promise<number> {
         imageUrls: listing.imageUrls,
         rawData: toInputJson(listing.rawData),
       },
-    })
-    count++
+    });
+    count++;
   }
 
-  return count
+  return count;
 }
 
 export async function runScraper(
   scraper: ScraperInterface,
   logger: FastifyBaseLogger,
 ): Promise<ScraperJobResult> {
-  const db = getDb()
+  const db = getDb();
 
   const job = await db.scraperJob.create({
     data: {
       sourceId: scraper.sourceId,
       status: 'RUNNING',
     },
-  })
+  });
 
-  const context: ScrapeContext = { logger }
-  let listingsProcessed = 0
-  let listingsUpserted = 0
-  let errorMessage: string | null = null
+  const context: ScrapeContext = { logger };
+  let listingsProcessed = 0;
+  let listingsUpserted = 0;
+  let errorMessage: string | null = null;
 
   try {
     if (scraper.initialize !== undefined) {
-      await scraper.initialize()
+      await scraper.initialize();
     }
 
-    const rawListings = await scraper.scrape(context)
-    listingsProcessed = rawListings.length
+    const rawListings = await scraper.scrape(context);
+    listingsProcessed = rawListings.length;
 
     const validListings = rawListings
       .map((raw) => scraper.transform(raw))
-      .filter((listing) => scraper.validate(listing))
+      .filter((listing) => scraper.validate(listing));
 
-    listingsUpserted = await upsertListings(validListings)
+    listingsUpserted = await upsertListings(validListings);
 
     await db.scraperJob.update({
       where: { id: job.id },
@@ -94,10 +99,10 @@ export async function runScraper(
         listingsProcessed,
         listingsUpserted,
       },
-    })
+    });
   } catch (error: unknown) {
-    errorMessage = error instanceof Error ? error.message : String(error)
-    logger.error({ sourceId: scraper.sourceId, error }, 'Scraper run failed')
+    errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error({ sourceId: scraper.sourceId, error }, 'Scraper run failed');
 
     await db.scraperJob.update({
       where: { id: job.id },
@@ -108,13 +113,13 @@ export async function runScraper(
         listingsUpserted,
         errorMessage,
       },
-    })
+    });
   } finally {
     if (scraper.cleanup !== undefined) {
       try {
-        await scraper.cleanup()
+        await scraper.cleanup();
       } catch (cleanupError: unknown) {
-        logger.error({ sourceId: scraper.sourceId, error: cleanupError }, 'Scraper cleanup failed')
+        logger.error({ sourceId: scraper.sourceId, error: cleanupError }, 'Scraper cleanup failed');
       }
     }
   }
@@ -128,5 +133,5 @@ export async function runScraper(
     errorMessage,
     startedAt: job.startedAt,
     finishedAt: new Date(),
-  }
+  };
 }

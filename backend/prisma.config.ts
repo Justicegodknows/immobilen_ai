@@ -1,11 +1,11 @@
-import { defineConfig } from 'prisma/config'
-import { PrismaPg } from '@prisma/adapter-pg'
+import { defineConfig } from 'prisma/config';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 export default defineConfig({
   schema: 'src/database/schema.prisma',
   migrate: {
     adapter(env) {
-      return new PrismaPg({ connectionString: env['DATABASE_URL'] })
+      return new PrismaPg({ connectionString: env['DATABASE_URL'] });
     },
   },
-})
+});
