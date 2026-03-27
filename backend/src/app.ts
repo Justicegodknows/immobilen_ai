@@ -1,9 +1,17 @@
 import Fastify from 'fastify'
+import type { FastifyInstance } from 'fastify'
+import healthRoutes from './api/health/health.routes'
+import { sharedMiddleware } from './shared/middleware/index'
 
-const app = Fastify({ logger: true })
+export async function buildApp(): Promise<FastifyInstance> {
+  const app = Fastify({ logger: true })
 
-app.get('/health', () => {
-  return { status: 'ok' }
-})
+  // Cross-cutting middleware: request ID, response time
+  app.register(sharedMiddleware)
 
-export default app
+  // API routes — each resource is registered under its own prefix
+  await app.register(healthRoutes)
+  // Future: await app.register(propertyRoutes, { prefix: '/api/v1/properties' })
+
+  return app
+}
