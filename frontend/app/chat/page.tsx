@@ -143,14 +143,14 @@ export default function ChatPage() {
         <div className="flex h-full">
             {/* Sidebar */}
             <aside
-                className={`fixed inset-y-0 left-0 z-40 w-72 transform border-r border-black/10 bg-white transition-transform md:relative md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+                className={`fixed inset-y-0 left-0 z-40 w-72 transform bg-surface-low transition-transform md:relative md:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
                     }`}
             >
                 <div className="flex h-full flex-col">
-                    <div className="border-b border-black/10 p-4">
+                    <div className="p-4">
                         <button
                             onClick={startNewConversation}
-                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-black px-4 py-3 font-medium text-white transition hover:bg-black/80"
+                            className="btn-primary flex w-full items-center justify-center gap-2"
                         >
                             <span>+</span>
                             New Chat
@@ -158,7 +158,7 @@ export default function ChatPage() {
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-3">
-                        <p className="px-2 text-xs font-medium text-black/50">Recent Conversations</p>
+                        <p className="text-label px-2 text-muted">Recent Conversations</p>
                         <div className="mt-2 space-y-1">
                             {conversations.map((conv) => (
                                 <button
@@ -167,13 +167,13 @@ export default function ChatPage() {
                                         setSelectedConversation(conv.id);
                                         setSidebarOpen(false);
                                     }}
-                                    className={`w-full rounded-lg p-3 text-left transition ${selectedConversation === conv.id
-                                        ? "bg-black text-white"
-                                        : "hover:bg-black/5"
+                                    className={`w-full rounded-xl p-3 text-left transition ${selectedConversation === conv.id
+                                        ? "bg-primary text-white"
+                                        : "hover:bg-surface-high"
                                         }`}
                                 >
                                     <p className="text-sm font-medium">{conv.title}</p>
-                                    <p className={`text-xs ${selectedConversation === conv.id ? "text-white/70" : "text-black/50"}`}>
+                                    <p className={`text-xs ${selectedConversation === conv.id ? "text-white/70" : "text-muted"}`}>
                                         {conv.date}
                                     </p>
                                 </button>
@@ -181,24 +181,24 @@ export default function ChatPage() {
                         </div>
                     </div>
 
-                    <div className="border-t border-black/10 p-4">
+                    <div className="p-4">
                         <Link
                             href="/tracker"
-                            className="flex items-center gap-3 rounded-xl p-3 text-sm hover:bg-black/5"
+                            className="flex items-center gap-3 rounded-xl p-3 text-sm text-muted hover:bg-surface-high"
                         >
                             <span>📊</span>
                             Application Tracker
                         </Link>
                         <Link
                             href="/search"
-                            className="flex items-center gap-3 rounded-xl p-3 text-sm hover:bg-black/5"
+                            className="flex items-center gap-3 rounded-xl p-3 text-sm text-muted hover:bg-surface-high"
                         >
                             <span>🏠</span>
                             Search Listings
                         </Link>
                         <Link
                             href="/intelligence"
-                            className="flex items-center gap-3 rounded-xl p-3 text-sm hover:bg-black/5"
+                            className="flex items-center gap-3 rounded-xl p-3 text-sm text-muted hover:bg-surface-high"
                         >
                             <span>🧠</span>
                             Market Intelligence
@@ -210,17 +210,17 @@ export default function ChatPage() {
             {/* Main Chat Area */}
             <main className="flex flex-1 flex-col">
                 {/* Chat Header */}
-                <header className="flex items-center justify-between border-b border-black/10 bg-white p-4">
+                <header className="flex items-center justify-between glass-nav p-4">
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => setSidebarOpen(!sidebarOpen)}
-                            className="rounded-lg p-2 hover:bg-black/5 md:hidden"
+                            className="rounded-lg p-2 hover:bg-surface-low md:hidden"
                         >
                             ☰
                         </button>
                         <div>
-                            <h1 className="font-semibold">AI Rental Assistant</h1>
-                            <p className="text-xs text-black/60">Your guide to finding a home in Berlin</p>
+                            <h1 className="font-semibold text-on-background">AI Rental Assistant</h1>
+                            <p className="text-xs text-muted">Your guide to finding a home in Berlin</p>
                         </div>
                     </div>
                 </header>
@@ -230,24 +230,24 @@ export default function ChatPage() {
                     {messages.length === 0 ? (
                         <div className="mx-auto flex max-w-3xl flex-col items-center justify-center gap-8 px-4 py-12">
                             <div className="text-center">
-                                <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-black text-4xl text-white">
+                                <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary text-4xl text-white">
                                     🤖
                                 </div>
-                                <h2 className="text-2xl font-bold">Welcome to your Rental Assistant</h2>
-                                <p className="mt-2 text-black/60">
+                                <h2 className="text-headline text-on-background">Welcome to your Rental Assistant</h2>
+                                <p className="mt-2 text-muted">
                                     I'm here to help you find and secure your perfect home in Berlin
                                 </p>
                             </div>
 
                             {/* Quick Actions */}
                             <div className="w-full">
-                                <p className="mb-3 text-sm font-medium text-black/60">Quick actions:</p>
+                                <p className="mb-3 text-label text-muted">Quick actions:</p>
                                 <div className="grid gap-2 md:grid-cols-2">
                                     {quickActions.map((action) => (
                                         <button
                                             key={action.label}
                                             onClick={() => sendMessage(action.query)}
-                                            className="flex items-center gap-3 rounded-xl border border-black/10 bg-white p-4 text-left transition hover:border-black hover:shadow-sm"
+                                            className="ds-card flex items-center gap-3 p-4 text-left"
                                         >
                                             <span className="text-xl">{action.icon}</span>
                                             <span className="text-sm font-medium">{action.label}</span>
@@ -261,11 +261,11 @@ export default function ChatPage() {
                                 {welcomeTips.map((tip) => (
                                     <div
                                         key={tip.title}
-                                        className="rounded-xl border border-black/10 bg-white p-4"
+                                        className="ds-card p-4"
                                     >
                                         <span className="text-2xl">{tip.icon}</span>
-                                        <p className="mt-2 font-medium">{tip.title}</p>
-                                        <p className="text-sm text-black/60">{tip.description}</p>
+                                        <p className="mt-2 font-medium text-on-background">{tip.title}</p>
+                                        <p className="text-sm text-muted">{tip.description}</p>
                                     </div>
                                 ))}
                             </div>
@@ -279,8 +279,8 @@ export default function ChatPage() {
                                 >
                                     <div
                                         className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg ${message.role === "user"
-                                            ? "bg-black text-white"
-                                            : "bg-black/10"
+                                            ? "bg-secondary text-white"
+                                            : "bg-surface-low"
                                             }`}
                                     >
                                         {message.role === "user" ? "👤" : "🤖"}
@@ -291,8 +291,8 @@ export default function ChatPage() {
                                     >
                                         <div
                                             className={`inline-block rounded-2xl px-4 py-3 text-sm ${message.role === "user"
-                                                ? "bg-black text-white"
-                                                : "bg-black/5"
+                                                ? "bg-primary text-white"
+                                                : "bg-surface-low text-on-background"
                                                 }`}
                                         >
                                             <p className="whitespace-pre-wrap text-left">{message.content}</p>
@@ -304,7 +304,7 @@ export default function ChatPage() {
                                                     <button
                                                         key={suggestion}
                                                         onClick={() => sendMessage(suggestion)}
-                                                        className="rounded-full border border-black/20 bg-white px-3 py-1.5 text-xs font-medium transition hover:bg-black/5"
+                                                        className="rounded-full bg-surface-card ghost-border px-3 py-1.5 text-xs font-medium transition hover:bg-surface-low"
                                                     >
                                                         {suggestion}
                                                     </button>
@@ -315,13 +315,13 @@ export default function ChatPage() {
                                         {message.relatedListing && (
                                             <Link
                                                 href={`/listings/${message.relatedListing.id}`}
-                                                className="mt-3 flex w-full items-center justify-between rounded-xl border border-black/10 bg-white p-3 transition hover:border-black"
+                                                className="ds-card mt-3 flex w-full items-center justify-between p-3"
                                             >
                                                 <div>
-                                                    <p className="font-medium">{message.relatedListing.title}</p>
-                                                    <p className="text-sm text-black/60">€{message.relatedListing.rent}/month</p>
+                                                    <p className="font-medium text-on-background">{message.relatedListing.title}</p>
+                                                    <p className="text-sm text-muted">€{message.relatedListing.rent}/month</p>
                                                 </div>
-                                                <span className="text-black/40">→</span>
+                                                <span className="text-muted">→</span>
                                             </Link>
                                         )}
                                     </div>
@@ -330,13 +330,13 @@ export default function ChatPage() {
 
                             {isLoading && (
                                 <div className="mb-6 flex gap-4">
-                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-black/10 text-lg">
+                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-low text-lg">
                                         🤖
                                     </div>
-                                    <div className="flex items-center gap-1 rounded-2xl bg-black/5 px-4 py-3">
-                                        <div className="h-2 w-2 animate-bounce rounded-full bg-black/40" />
-                                        <div className="h-2 w-2 animate-bounce rounded-full bg-black/40 [animation-delay:0.15s]" />
-                                        <div className="h-2 w-2 animate-bounce rounded-full bg-black/40 [animation-delay:0.3s]" />
+                                    <div className="flex items-center gap-1 rounded-2xl bg-surface-low px-4 py-3">
+                                        <div className="h-2 w-2 animate-bounce rounded-full bg-primary" />
+                                        <div className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:0.15s]" />
+                                        <div className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:0.3s]" />
                                     </div>
                                 </div>
                             )}
@@ -347,7 +347,7 @@ export default function ChatPage() {
                 </div>
 
                 {/* Input Area */}
-                <div className="border-t border-black/10 bg-white p-4">
+                <div className="glass-nav p-4">
                     <div className="mx-auto flex max-w-3xl gap-3">
                         <input
                             type="text"
@@ -360,17 +360,17 @@ export default function ChatPage() {
                                 }
                             }}
                             placeholder="Ask about apartments, applications, documents..."
-                            className="flex-1 rounded-xl border border-black/20 px-4 py-3"
+                            className="ds-input flex-1"
                         />
                         <button
                             onClick={() => sendMessage(input)}
                             disabled={!input.trim() || isLoading}
-                            className="flex items-center justify-center rounded-xl bg-black px-6 font-medium text-white transition hover:bg-black/80 disabled:opacity-50"
+                            className="btn-primary disabled:opacity-50"
                         >
                             Send
                         </button>
                     </div>
-                    <p className="mt-2 text-center text-xs text-black/50">
+                    <p className="mt-2 text-center text-xs text-muted">
                         AI can make mistakes. Verify important information.
                     </p>
                 </div>

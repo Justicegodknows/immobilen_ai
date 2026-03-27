@@ -6,32 +6,37 @@ export default function Home() {
     return (
         <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-4 py-12 md:px-8">
             {/* Hero Section */}
-            <section className="relative overflow-hidden rounded-3xl border border-black/10 bg-gradient-to-br from-black to-black/80 p-8 text-white md:p-12">
+            <section className="relative overflow-hidden rounded-3xl bg-on-background p-8 text-white md:p-16">
+                {/* Glowing blobs */}
+                <div className="blob-mint absolute -left-24 -top-24 h-72 w-72" />
+                <div className="blob-blue absolute right-0 top-1/3 h-64 w-64" />
+                <div className="blob-rose absolute -bottom-16 left-1/3 h-56 w-56" />
+
                 <div className="relative z-10">
-                    <h1 className="text-3xl font-bold md:text-5xl">
+                    <p className="text-label mb-4 text-primary">AI-POWERED APARTMENT SEARCH</p>
+                    <h1 className="text-display max-w-3xl">
                         Find Your Home in Berlin
                     </h1>
-                    <p className="mt-4 max-w-2xl text-lg text-white/80">
+                    <p className="mt-6 max-w-2xl text-lg text-white/70">
                         AI-powered apartment search, application tracking, and Genossenschaft matching.
                         Get your dream home faster with intelligent recommendations.
                     </p>
-                    <div className="mt-8 flex flex-wrap gap-4">
+                    <div className="mt-10 flex flex-wrap gap-4">
                         <Link
                             href="/search"
-                            className="rounded-xl bg-white px-6 py-3 font-semibold text-black transition hover:bg-white/90"
+                            className="btn-primary inline-flex items-center"
                         >
                             Start Searching →
                         </Link>
                         <Link
                             href="/chat"
-                            className="rounded-xl border border-white/30 px-6 py-3 font-semibold transition hover:bg-white/10"
+                            className="btn-secondary inline-flex items-center !text-white"
+                            style={{ boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.2)' }}
                         >
                             Ask AI Assistant
                         </Link>
                     </div>
                 </div>
-                <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-                <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
             </section>
 
             {/* Quick Stats */}
@@ -89,8 +94,8 @@ export default function Home() {
             </section>
 
             {/* How It Works */}
-            <section className="rounded-2xl border border-black/10 bg-white p-8">
-                <h2 className="text-center text-2xl font-bold">How It Works</h2>
+            <section className="ds-section">
+                <h2 className="text-headline text-center text-on-background">How It Works</h2>
                 <div className="mt-8 grid gap-6 md:grid-cols-4">
                     <StepCard
                         step="1"
@@ -116,21 +121,21 @@ export default function Home() {
             </section>
 
             {/* CTA Section */}
-            <section className="rounded-2xl border border-black/10 bg-gradient-to-r from-blue-50 to-purple-50 p-8 text-center">
-                <h2 className="text-xl font-bold">Ready to find your home?</h2>
-                <p className="mt-2 text-black/60">
+            <section className="rounded-3xl bg-gradient-to-r from-surface-low to-surface-high p-8 text-center md:p-12">
+                <h2 className="text-headline text-on-background">Ready to find your home?</h2>
+                <p className="mt-2 text-muted">
                     Join thousands of tenants who found their perfect home in Berlin
                 </p>
-                <div className="mt-6 flex justify-center gap-4">
+                <div className="mt-8 flex justify-center gap-4">
                     <Link
                         href="/search"
-                        className="rounded-xl bg-black px-6 py-3 font-semibold text-white transition hover:bg-black/80"
+                        className="btn-primary inline-flex items-center"
                     >
                         Start Free Search
                     </Link>
                     <Link
                         href="/intelligence"
-                        className="rounded-xl border border-black/20 px-6 py-3 font-semibold transition hover:bg-black/5"
+                        className="btn-secondary inline-flex items-center"
                     >
                         Explore Market Data
                     </Link>
@@ -142,10 +147,10 @@ export default function Home() {
 
 function StatCard({ value, label, subtext }: { value: string; label: string; subtext: string }) {
     return (
-        <div className="rounded-2xl border border-black/10 bg-white p-6 text-center shadow-sm">
-            <p className="text-3xl font-bold">{value}</p>
-            <p className="mt-1 font-medium">{label}</p>
-            <p className="text-sm text-black/50">{subtext}</p>
+        <div className="ds-card p-6 text-center">
+            <p className="text-3xl font-bold text-primary">{value}</p>
+            <p className="mt-1 font-medium text-on-background">{label}</p>
+            <p className="text-sm text-muted">{subtext}</p>
         </div>
     );
 }
@@ -164,15 +169,15 @@ function FeatureCard({
     cta: string;
 }) {
     return (
-        <div className="group rounded-2xl border border-black/10 bg-white p-6 shadow-sm transition hover:border-black hover:shadow-md">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-black/10 text-2xl">
+        <div className="ds-card group p-6">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-low text-2xl">
                 {icon}
             </div>
-            <h3 className="mt-4 text-lg font-semibold">{title}</h3>
-            <p className="mt-2 text-sm text-black/60">{description}</p>
+            <h3 className="mt-4 text-title text-on-background">{title}</h3>
+            <p className="mt-2 text-sm text-muted">{description}</p>
             <Link
                 href={href}
-                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-black underline transition hover:text-black/70"
+                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary transition hover:text-primary-hover"
             >
                 {cta} →
             </Link>
@@ -183,11 +188,11 @@ function FeatureCard({
 function StepCard({ step, title, description }: { step: string; title: string; description: string }) {
     return (
         <div className="text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-black text-2xl font-bold text-white">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-2xl font-bold text-white">
                 {step}
             </div>
-            <h3 className="mt-4 font-semibold">{title}</h3>
-            <p className="mt-2 text-sm text-black/60">{description}</p>
+            <h3 className="mt-4 font-semibold text-on-background">{title}</h3>
+            <p className="mt-2 text-sm text-muted">{description}</p>
         </div>
     );
 }

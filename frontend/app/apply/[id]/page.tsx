@@ -163,7 +163,7 @@ ${profile.name || "[Your name]"}`);
         return (
             <div className="space-y-6">
                 <div>
-                    <h2 className="text-lg font-semibold">Personal Information</h2>
+                    <h2 className="text-title text-on-background">Personal Information</h2>
                     <div className="mt-4 grid gap-4 md:grid-cols-2">
                         <InputField
                             label="Full Name"
@@ -195,7 +195,7 @@ ${profile.name || "[Your name]"}`);
                 </div>
 
                 <div>
-                    <h2 className="text-lg font-semibold">Employment & Income</h2>
+                    <h2 className="text-title text-on-background">Employment & Income</h2>
                     <div className="mt-4 grid gap-4 md:grid-cols-2">
                         <InputField
                             label="Occupation"
@@ -233,7 +233,7 @@ ${profile.name || "[Your name]"}`);
                 </div>
 
                 <div>
-                    <h2 className="text-lg font-semibold">Household Details</h2>
+                    <h2 className="text-title text-on-background">Household Details</h2>
                     <div className="mt-4 grid gap-4 md:grid-cols-2">
                         <InputField
                             label="Household Size"
@@ -264,8 +264,8 @@ ${profile.name || "[Your name]"}`);
                                 type="button"
                                 onClick={() => updateProfile("hasPets", false)}
                                 className={`rounded-xl border px-4 py-2 ${!profile.hasPets
-                                        ? "border-black bg-black text-white"
-                                        : "border-black/20"
+                                    ? "border-primary bg-primary text-white"
+                                    : "ghost-border"
                                     }`}
                             >
                                 No
@@ -274,8 +274,8 @@ ${profile.name || "[Your name]"}`);
                                 type="button"
                                 onClick={() => updateProfile("hasPets", true)}
                                 className={`rounded-xl border px-4 py-2 ${profile.hasPets
-                                        ? "border-black bg-black text-white"
-                                        : "border-black/20"
+                                    ? "border-primary bg-primary text-white"
+                                    : "ghost-border"
                                     }`}
                             >
                                 Yes
@@ -286,7 +286,7 @@ ${profile.name || "[Your name]"}`);
                                 value={profile.petsDescription}
                                 onChange={(e) => updateProfile("petsDescription", e.target.value)}
                                 placeholder="Tell us about your pet(s)..."
-                                className="mt-3 w-full rounded-xl border border-black/20 p-3 text-sm"
+                                className="mt-3 w-full ds-input p-3 text-sm"
                                 rows={2}
                             />
                         )}
@@ -294,12 +294,12 @@ ${profile.name || "[Your name]"}`);
                 </div>
 
                 <div>
-                    <h2 className="text-lg font-semibold">Personal Message</h2>
+                    <h2 className="text-title text-on-background">Personal Message</h2>
                     <textarea
                         value={profile.message}
                         onChange={(e) => updateProfile("message", e.target.value)}
                         placeholder="Tell the landlord why you're a great tenant..."
-                        className="mt-3 w-full rounded-xl border border-black/20 p-3 text-sm"
+                        className="mt-3 w-full ds-input p-3 text-sm"
                         rows={4}
                     />
                 </div>
@@ -325,18 +325,18 @@ ${profile.name || "[Your name]"}`);
                 </div>
 
                 <div>
-                    <h2 className="text-lg font-semibold">Required Documents</h2>
+                    <h2 className="text-title text-on-background">Required Documents</h2>
                     <div className="mt-4 space-y-3">
                         {requiredDocs.map((doc) => (
                             <div
                                 key={doc.id}
-                                className="flex items-center justify-between rounded-xl border border-black/10 p-4"
+                                className="flex items-center justify-between rounded-xl bg-surface-low p-4"
                             >
                                 <div className="flex items-center gap-3">
                                     <span className="text-2xl">{doc.icon}</span>
                                     <div>
                                         <p className="font-medium">{doc.label}</p>
-                                        <p className="text-xs text-black/50">PDF, JPG, or PNG (max 5MB)</p>
+                                        <p className="text-xs text-muted">PDF, JPG, or PNG (max 5MB)</p>
                                     </div>
                                 </div>
                                 {uploadedDocs.includes(doc.id) ? (
@@ -349,7 +349,7 @@ ${profile.name || "[Your name]"}`);
                                 ) : (
                                     <button
                                         onClick={() => handleDocUpload(doc.id)}
-                                        className="rounded-lg border border-black/20 px-3 py-1.5 text-sm font-medium transition hover:bg-black/5"
+                                        className="rounded-lg ghost-border px-3 py-1.5 text-sm font-medium transition hover:bg-surface-low"
                                     >
                                         Upload
                                     </button>
@@ -361,20 +361,20 @@ ${profile.name || "[Your name]"}`);
 
                 {uploadedDocs.length > 0 && (
                     <div>
-                        <h2 className="text-lg font-semibold">Uploaded Documents</h2>
+                        <h2 className="text-title text-on-background">Uploaded Documents</h2>
                         <div className="mt-3 flex flex-wrap gap-2">
                             {uploadedDocs.map((docId) => {
                                 const doc = requiredDocs.find((d) => d.id === docId);
                                 return (
                                     <span
                                         key={docId}
-                                        className="flex items-center gap-2 rounded-full bg-black/10 px-3 py-1.5 text-sm"
+                                        className="flex items-center gap-2 rounded-full bg-surface-low px-3 py-1.5 text-sm"
                                     >
                                         <span>{doc?.icon}</span>
                                         <span>{doc?.label.split("(")[0].trim()}</span>
                                         <button
                                             onClick={() => handleDocRemove(docId)}
-                                            className="ml-1 text-black/40 hover:text-black"
+                                            className="ml-1 text-muted hover:text-black"
                                         >
                                             ×
                                         </button>
@@ -385,10 +385,10 @@ ${profile.name || "[Your name]"}`);
                     </div>
                 )}
 
-                <div className="rounded-xl border border-dashed border-black/30 p-6 text-center">
+                <div className="rounded-xl border border-dashed border-outline-variant p-6 text-center">
                     <p className="text-2xl">📁</p>
                     <p className="mt-2 font-medium">Drag and drop files here</p>
-                    <p className="text-sm text-black/60">or click to browse</p>
+                    <p className="text-sm text-muted">or click to browse</p>
                 </div>
             </div>
         );
@@ -399,21 +399,21 @@ ${profile.name || "[Your name]"}`);
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-lg font-semibold">Cover Letter</h2>
-                        <p className="text-sm text-black/60">
+                        <h2 className="text-title text-on-background">Cover Letter</h2>
+                        <p className="text-sm text-muted">
                             Make a great first impression with a personalized message
                         </p>
                     </div>
                     <button
                         onClick={generateCoverLetter}
                         disabled={isGenerating}
-                        className="rounded-xl border border-black/20 px-4 py-2 text-sm font-medium transition hover:bg-black/5 disabled:opacity-50"
+                        className="btn-secondary !h-auto !py-2 text-sm disabled:opacity-50"
                     >
                         {isGenerating ? "✨ Generating..." : "✨ AI Generate"}
                     </button>
                 </div>
 
-                <div className="rounded-xl border border-black/10 bg-yellow-50 p-4">
+                <div className="rounded-xl bg-yellow-50 p-4">
                     <p className="text-sm text-yellow-800">
                         🏠 Applying for: <strong>{listing.title}</strong> in {listing.district}
                     </p>
@@ -423,20 +423,20 @@ ${profile.name || "[Your name]"}`);
                     value={coverLetter}
                     onChange={(e) => setCoverLetter(e.target.value)}
                     placeholder="Write your cover letter here, or use AI Generate above..."
-                    className="min-h-[400px] w-full rounded-xl border border-black/20 p-4 text-sm font-mono"
+                    className="min-h-[400px] w-full ds-input p-4 text-sm font-mono"
                 />
 
                 <div className="flex gap-2">
                     <button
                         onClick={generateCoverLetter}
                         disabled={isGenerating || !profile.name}
-                        className="rounded-xl border border-black/20 px-4 py-2 text-sm font-medium transition hover:bg-black/5 disabled:opacity-50"
+                        className="btn-secondary !h-auto !py-2 text-sm disabled:opacity-50"
                     >
                         🔄 Regenerate
                     </button>
                     <button
                         onClick={() => setCoverLetter("")}
-                        className="rounded-xl border border-black/20 px-4 py-2 text-sm font-medium transition hover:bg-black/5"
+                        className="btn-secondary !h-auto !py-2 text-sm"
                     >
                         Clear
                     </button>
@@ -461,27 +461,27 @@ ${profile.name || "[Your name]"}`);
 
         return (
             <div className="space-y-6">
-                <div className="rounded-2xl border border-black/10 bg-white p-6">
+                <div className="ds-card p-6">
                     <div className="mb-4 flex items-center justify-between">
-                        <h2 className="text-lg font-semibold">Application Summary</h2>
+                        <h2 className="text-title text-on-background">Application Summary</h2>
                         <div className={`rounded-full px-3 py-1 text-sm font-medium ${completionScore >= 80
-                                ? "bg-green-100 text-green-700"
-                                : completionScore >= 60
-                                    ? "bg-yellow-100 text-yellow-700"
-                                    : "bg-red-100 text-red-700"
+                            ? "bg-green-100 text-green-700"
+                            : completionScore >= 60
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-red-100 text-red-700"
                             }`}>
                             {completionScore}% Complete
                         </div>
                     </div>
 
                     {/* Progress Bar */}
-                    <div className="h-3 w-full overflow-hidden rounded-full bg-black/10">
+                    <div className="h-3 w-full overflow-hidden rounded-full bg-surface-low">
                         <div
                             className={`h-full transition-all ${completionScore >= 80
-                                    ? "bg-green-500"
-                                    : completionScore >= 60
-                                        ? "bg-yellow-500"
-                                        : "bg-red-500"
+                                ? "bg-green-500"
+                                : completionScore >= 60
+                                    ? "bg-yellow-500"
+                                    : "bg-red-500"
                                 }`}
                             style={{ width: `${completionScore}%` }}
                         />
@@ -512,12 +512,12 @@ ${profile.name || "[Your name]"}`);
 
                     <ReviewCard title="🏠 Property" completed={true}>
                         <p><strong>{listing.title}</strong></p>
-                        <p className="text-sm text-black/60">{listing.address}</p>
-                        <p className="text-sm text-black/60">€{listing.monthlyRentEur}/month</p>
+                        <p className="text-sm text-muted">{listing.address}</p>
+                        <p className="text-sm text-muted">€{listing.monthlyRentEur}/month</p>
                     </ReviewCard>
                 </div>
 
-                <div className="rounded-xl bg-black/5 p-4">
+                <div className="rounded-xl bg-surface-low p-4">
                     <p className="text-sm">
                         📬 <strong>What happens next?</strong>
                     </p>
@@ -538,12 +538,12 @@ ${profile.name || "[Your name]"}`);
                 <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-green-100 text-5xl">
                     🎉
                 </div>
-                <h2 className="text-2xl font-bold">Application Submitted!</h2>
+                <h2 className="text-headline text-on-background">Application Submitted!</h2>
                 <p className="mt-2 max-w-md text-black/70">
                     Your application for <strong>{listing.title}</strong> has been sent successfully.
                 </p>
 
-                <div className="mt-6 w-full max-w-md rounded-xl bg-black/5 p-4 text-left">
+                <div className="mt-6 w-full max-w-md rounded-xl bg-surface-low p-4 text-left">
                     <p className="text-sm font-medium">Next Steps:</p>
                     <ul className="mt-2 space-y-2 text-sm text-black/70">
                         <li className="flex items-center gap-2">
@@ -561,13 +561,13 @@ ${profile.name || "[Your name]"}`);
                 <div className="mt-8 flex gap-3">
                     <Link
                         href="/tracker"
-                        className="rounded-xl bg-black px-6 py-3 font-medium text-white"
+                        className="btn-primary"
                     >
                         Go to Tracker
                     </Link>
                     <Link
                         href="/search"
-                        className="rounded-xl border border-black/20 px-6 py-3 font-medium transition hover:bg-black/5"
+                        className="rounded-xl ghost-border px-6 py-3 font-medium transition hover:bg-surface-low"
                     >
                         Continue Searching
                     </Link>
@@ -579,15 +579,15 @@ ${profile.name || "[Your name]"}`);
     return (
         <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-4 py-8 md:px-8">
             {/* Header */}
-            <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
+            <div className="ds-card p-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold">Apply for Home</h1>
-                        <p className="mt-1 text-sm text-black/60">{listing.title}</p>
+                        <h1 className="text-headline text-on-background">Apply for Home</h1>
+                        <p className="mt-1 text-sm text-muted">{listing.title}</p>
                     </div>
                     <Link
                         href={`/listings/${listing.id}`}
-                        className="text-sm text-black/60 underline"
+                        className="text-sm text-muted underline"
                     >
                         View listing
                     </Link>
@@ -601,21 +601,21 @@ ${profile.name || "[Your name]"}`);
                                 <div key={step.id} className="flex items-center">
                                     <div
                                         className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold transition ${index <= currentStepIndex
-                                                ? "bg-black text-white"
-                                                : "bg-black/10 text-black/40"
+                                            ? "bg-primary text-white"
+                                            : "bg-surface-low text-muted"
                                             }`}
                                     >
                                         {index < currentStepIndex ? "✓" : step.icon}
                                     </div>
                                     <span
-                                        className={`ml-2 hidden text-sm font-medium md:block ${index <= currentStepIndex ? "text-black" : "text-black/40"
+                                        className={`ml-2 hidden text-sm font-medium md:block ${index <= currentStepIndex ? "text-black" : "text-muted"
                                             }`}
                                     >
                                         {step.label}
                                     </span>
                                     {index < steps.length - 1 && (
                                         <div
-                                            className={`mx-2 h-0.5 w-8 md:w-16 ${index < currentStepIndex ? "bg-black" : "bg-black/10"
+                                            className={`mx-2 h-0.5 w-8 md:w-16 ${index < currentStepIndex ? "bg-primary" : "bg-surface-low"
                                                 }`}
                                         />
                                     )}
@@ -627,7 +627,7 @@ ${profile.name || "[Your name]"}`);
             </div>
 
             {/* Form Content */}
-            <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
+            <div className="ds-card p-6">
                 {renderStep()}
             </div>
 
@@ -640,7 +640,7 @@ ${profile.name || "[Your name]"}`);
                                 ? `/listings/${listing.id}`
                                 : `/apply/${listing.id}?step=${steps[currentStepIndex - 1].id}`
                         }
-                        className="rounded-xl border border-black/20 px-6 py-3 font-medium transition hover:bg-black/5"
+                        className="rounded-xl ghost-border px-6 py-3 font-medium transition hover:bg-surface-low"
                     >
                         ← Back
                     </Link>
@@ -648,7 +648,7 @@ ${profile.name || "[Your name]"}`);
                     {currentStepIndex < steps.length - 1 ? (
                         <Link
                             href={`/apply/${listing.id}?step=${steps[currentStepIndex + 1].id}`}
-                            className="rounded-xl bg-black px-6 py-3 font-medium text-white transition hover:bg-black/80"
+                            className="btn-primary"
                         >
                             Continue →
                         </Link>
@@ -656,7 +656,7 @@ ${profile.name || "[Your name]"}`);
                         <button
                             onClick={submitApplication}
                             disabled={isSubmitting}
-                            className="rounded-xl bg-black px-6 py-3 font-medium text-white transition hover:bg-black/80 disabled:opacity-50"
+                            className="btn-primary disabled:opacity-50"
                         >
                             {isSubmitting ? "Submitting..." : "Submit Application"}
                         </button>

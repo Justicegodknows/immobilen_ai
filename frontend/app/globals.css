@@ -1,23 +1,203 @@
 @import "tailwindcss";
 
-:root {
-  --background: #f4f2ec;
-  --foreground: #191710;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* ── Design System: Tonal Architecture ── */
+
+  /* Primary – Mint Green */
+  --color-primary: #3ECFA0;
+  --color-primary-hover: #32b68c;
+  --color-primary-container: #006C4F;
+  --color-on-primary: #ffffff;
+
+  /* Secondary – Sky Blue */
+  --color-secondary: #5BA8FF;
+  --color-secondary-fixed: #D3E4FF;
+  --color-on-secondary-container: #003B6A;
+
+  /* Tertiary – Soft Rose */
+  --color-tertiary: #FF7EB3;
+  --color-tertiary-fixed: #FFE0EB;
+
+  /* Surfaces */
+  --color-surface: #F9F9FF;
+  --color-surface-low: #F0F3FF;
+  --color-surface-high: #DEE8FF;
+  --color-surface-card: #FFFFFF;
+  --color-surface-bright: #F8FBFF;
+
+  /* Text / On-surface */
+  --color-on-background: #101C2E;
+  --color-on-surface: #101C2E;
+  --color-muted: #64748B;
+  --color-outline-variant: rgba(100, 116, 139, 0.2);
+
+  /* Semantic */
+  --color-success: #1f7a5b;
+  --color-warning: #c9972f;
+  --color-danger: #cb4d3e;
+
+  /* Shadows */
+  --shadow-ambient: 0px 24px 48px rgba(15, 27, 45, 0.07);
+  --shadow-card: 0px 8px 24px rgba(15, 27, 45, 0.04);
+
+  /* Fonts */
+  --font-sans: "Inter", var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* Border radius */
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
 }
 
 body {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 10% 15%, rgba(201, 176, 122, 0.35), transparent 35%),
-    radial-gradient(circle at 90% 10%, rgba(96, 147, 172, 0.2), transparent 40%),
-    var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), "Avenir Next", "Segoe UI", sans-serif;
+  background: var(--color-surface);
+  color: var(--color-on-background);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Ghost-border utility ── */
+.ghost-border {
+  box-shadow: inset 0 0 0 1px var(--color-outline-variant);
+}
+
+/* ── Ambient glow blobs ── */
+.blob-mint {
+  background: rgba(62, 207, 160, 0.18);
+  border-radius: 9999px;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.blob-blue {
+  background: rgba(91, 168, 255, 0.15);
+  border-radius: 9999px;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.blob-rose {
+  background: rgba(255, 126, 179, 0.12);
+  border-radius: 9999px;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+/* ── Primary button gradient ── */
+.btn-primary {
+  background: linear-gradient(180deg, #3ECFA0 0%, #006C4F 100%);
+  color: white;
+  border-radius: var(--radius-md);
+  height: 48px;
+  padding: 0 1.5rem;
+  font-weight: 600;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-ambient);
+}
+
+/* ── Secondary (ghost) button ── */
+.btn-secondary {
+  background: transparent;
+  color: var(--color-on-background);
+  border-radius: var(--radius-md);
+  height: 48px;
+  padding: 0 1.5rem;
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px rgba(91, 168, 255, 0.2);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.btn-secondary:hover {
+  background: rgba(91, 168, 255, 0.06);
+}
+
+/* ── Input fields: design-system style ── */
+.ds-input {
+  background: var(--color-surface-low);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.625rem 0.875rem;
+  color: var(--color-on-background);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.ds-input:focus {
+  outline: none;
+  background: var(--color-surface-card);
+  box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+.ds-input::placeholder {
+  color: var(--color-muted);
+}
+
+/* ── AI insight chip ── */
+.chip-ai {
+  background: var(--color-secondary-fixed);
+  color: var(--color-on-secondary-container);
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* ── Card surface: tonal layering ── */
+.ds-card {
+  background: var(--color-surface-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.ds-card:hover {
+  box-shadow: var(--shadow-ambient);
+}
+
+/* ── Section surface ── */
+.ds-section {
+  background: var(--color-surface-low);
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+}
+
+/* ── Glassmorphism nav ── */
+.glass-nav {
+  background: rgba(249, 249, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* ── Typography helpers ── */
+.text-display {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.text-headline {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.text-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.text-body {
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.text-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
