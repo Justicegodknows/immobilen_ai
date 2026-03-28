@@ -1,9 +1,3 @@
-export type ListingSource =
-    | "immobilienscout24"
-    | "immowelt"
-    | "kleinanzeigen"
-    | "genossenschaft";
-
 export type LandlordType = "private" | "company" | "genossenschaft";
 
 export type Landlord = {
@@ -17,19 +11,62 @@ export type Landlord = {
 
 export type Listing = {
     id: string;
+    source: string;
+    sourceListingId: string;
     title: string;
-    district: string;
-    address: string;
-    monthlyRentEur: number;
-    sizeM2: number;
-    rooms: number;
-    source: ListingSource;
-    landlordId?: string;
-    genossenschaftName?: string;
-    landlordName: string;
-    commuteMinutesToCenter: number;
-    noiseScore: number;
-    vibeTags: string[];
+    coldRentAmount: number | null;
+    warmRentAmount: number | null;
+    priceCurrency: string;
+    freeFrom: string | null;
+    insertedAt: string | null;
+    isWBSRequired: boolean | null;
+    floor: number | null;
+    maxFloor: number | null;
+    yearOfConstruction: number | null;
+    heatingType: string | null;
+    energyType: string | null;
+    energyEfficiencyClass: string | null;
+    energyConsumptionKWhPerYear: number | null;
+    address: string | null;
+    city: string | null;
+    country: string | null;
+    areaM2: number | null;
+    rooms: number | null;
+    listingUrl: string | null;
+    imageUrls: string[];
+    features: string[];
+    isValid: boolean;
+    firstSeenAt: string;
+    lastSeenAt: string;
+};
+
+export type ListingsQuery = {
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+    q?: string;
+    source?: string;
+    city?: string;
+    minColdRent?: number;
+    maxColdRent?: number;
+    minWarmRent?: number;
+    maxWarmRent?: number;
+    minRooms?: number;
+    maxRooms?: number;
+    minAreaM2?: number;
+    maxAreaM2?: number;
+    isWBSRequired?: boolean;
+    features?: string;
+};
+
+export type ListingsResponse = {
+    data: Listing[];
+    meta: {
+        page: number;
+        limit: number;
+        total: number;
+    };
 };
 
 export type TenantProfile = {
@@ -172,17 +209,6 @@ export type GenossenschaftMatch = {
     isEligible: boolean;
     eligibilityReasons: string[];
     handoffUrl: string;
-};
-
-export type ListingsQuery = {
-    district?: string;
-    source?: ListingSource;
-    maxRent?: number;
-};
-
-export type ListingsResponse = {
-    count: number;
-    listings: Array<Listing & { priceAssessment: PriceAssessment }>;
 };
 
 export type TenantScoreResponse = {
