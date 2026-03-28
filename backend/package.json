@@ -11,7 +11,9 @@
     "lint:fix": "eslint src --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "postinstall": "npx playwright install chromium",
     "start:db": "docker compose -f docker-compose.db.yml up -d",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
@@ -29,6 +31,7 @@
     "node": ">=21.0.0"
   },
   "dependencies": {
+    "@fastify/cors": "^11.2.0",
     "@fastify/schedule": "^6.0.0",
     "@prisma/adapter-pg": "^7.6.0",
     "@prisma/client": "^7.6.0",
@@ -53,6 +56,7 @@
     "prisma": "^7.6.0",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.2",
-    "typescript-eslint": "^8.57.2"
+    "typescript-eslint": "^8.57.2",
+    "vitest": "^4.1.2"
   }
 }

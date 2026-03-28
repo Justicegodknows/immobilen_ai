@@ -244,7 +244,7 @@ export default function ApplyPage(_props: ApplyPageProps) {
                 setCoverLetter(nextValue);
             });
         } catch {
-            setCoverLetter(`Dear ${listing.landlordName},
+            setCoverLetter(`Dear Landlord,
 
 I am writing to express my strong interest in the apartment at ${listing.address}.
 
@@ -254,7 +254,7 @@ About me:
 - Monthly net income: €${profile.monthlyNetIncome || "[Amount]"}
 - Household size: ${profile.householdSize} person(s)
 
-I am a responsible tenant looking for a long-term home in ${listing.district}. I would be delighted to arrange a viewing.
+I am a responsible tenant looking for a long-term home in ${listing.city ?? "Berlin"}. I would be delighted to arrange a viewing.
 
 Best regards,
 ${profile.name || "[Your name]"}`);
@@ -268,8 +268,7 @@ ${profile.name || "[Your name]"}`);
         try {
             const prompt = [
                 `Write a short personal message (3-5 sentences) from a rental applicant to a landlord.`,
-                `Apartment: "${listing.title}" in ${listing.district}, €${listing.monthlyRentEur}/month.`,
-                `Landlord: ${listing.landlordName}.`,
+                `Apartment: "${listing.title}" in ${listing.city ?? "Berlin"}, €${listing.warmRentAmount ?? listing.coldRentAmount ?? "N/A"}/month.`,
                 profile.name ? `Applicant name: ${profile.name}.` : "",
                 profile.occupation ? `Occupation: ${profile.occupation}.` : "",
                 profile.monthlyNetIncome ? `Monthly income: €${profile.monthlyNetIncome}.` : "",
@@ -296,7 +295,7 @@ ${profile.name || "[Your name]"}`);
         } catch {
             updateProfile(
                 "message",
-                `I am very interested in your apartment in ${listing.district}. As a ${profile.occupation || "working professional"} with stable income, I am looking for a long-term home and can provide all required documents promptly. I would appreciate the opportunity to introduce myself at a viewing.`,
+                `I am very interested in your apartment in ${listing.city ?? "Berlin"}. As a ${profile.occupation || "working professional"} with stable income, I am looking for a long-term home and can provide all required documents promptly. I would appreciate the opportunity to introduce myself at a viewing.`,
             );
         } finally {
             setIsGeneratingMessage(false);
@@ -661,7 +660,7 @@ ${profile.name || "[Your name]"}`);
                 </div>
 
                 <div className="rounded-2xl bg-secondary-fixed/35 px-4 py-3 text-sm text-on-secondary-container">
-                    🏠 <strong>{listing.title}</strong> · {listing.district}
+                    🏠 <strong>{listing.title}</strong> · {listing.city ?? "Berlin"}
                 </div>
 
                 <textarea
@@ -747,7 +746,7 @@ ${profile.name || "[Your name]"}`);
                     <ReviewCard title="🏠 Listing" completed={true}>
                         <p><strong>{listing.title}</strong></p>
                         <p className="text-sm text-on-surface/70">{listing.address}</p>
-                        <p className="text-sm text-on-surface/70">€{listing.monthlyRentEur}/month</p>
+                        <p className="text-sm text-on-surface/70">€{listing.warmRentAmount ?? listing.coldRentAmount ?? "N/A"}/month</p>
                     </ReviewCard>
                 </div>
 

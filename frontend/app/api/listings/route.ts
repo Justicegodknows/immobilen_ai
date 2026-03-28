@@ -1,40 +1,10 @@
-import { berlinListings } from "@/lib/data";
-import { assessPrice } from "@/lib/scoring";
-import { ListingsQuery, ListingsResponse } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+
 export async function GET(request: NextRequest) {
-    const query: ListingsQuery = {
-        district: request.nextUrl.searchParams.get("district") ?? undefined,
-        source:
-            (request.nextUrl.searchParams.get("source") as ListingsQuery["source"]) ??
-            undefined,
-        maxRent: request.nextUrl.searchParams.get("maxRent")
-            ? Number(request.nextUrl.searchParams.get("maxRent"))
-            : undefined,
-    };
-
-    const district = query.district?.toLowerCase();
-    const source = query.source?.toLowerCase();
-    const maxRentRaw = request.nextUrl.searchParams.get("maxRent");
-    const maxRent = maxRentRaw ? Number(maxRentRaw) : undefined;
-
-    const listings = berlinListings
-        .filter((listing) => {
-            if (district && listing.district.toLowerCase() !== district) return false;
-            if (source && listing.source.toLowerCase() !== source) return false;
-            if (maxRent !== undefined && listing.monthlyRentEur > maxRent) return false;
-            return true;
-        })
-        .map((listing) => ({
-            ...listing,
-            priceAssessment: assessPrice(listing),
-        }));
-
-    const payload: ListingsResponse = {
-        count: listings.length,
-        listings,
-    };
-
-    return NextResponse.json(payload);
+    const params = request.nextUrl.searchParams.toString();
+    const upstream = await fetch(`${BACKEND_URL}/api/v1/listings?${params}`);
+    const data = await upstream.json();
+    return NextResponse.json(data, { status: upstream.status });
 }

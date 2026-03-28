@@ -1,147 +1,133 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FeaturePageIntro } from "@/components/feature-page-intro";
-import { Listing } from "@/lib/types";
-import { berlinListings, districtRentBenchmarkPerM2 } from "@/lib/data";
+import type { Listing, ListingsResponse } from "@/lib/types";
+import { getListings } from "@/lib/api";
+import { COMPANY_BASE_URLS } from "@/lib/company-urls";
+import Image from "next/image";
 
 type Filters = {
-    district: string;
+    city: string;
     minPrice: string;
     maxPrice: string;
     minSize: string;
     maxSize: string;
     rooms: string;
     source: string;
-    maxCommute: string;
-    vibeTags: string[];
+    q: string;
+    isWBSRequired: string;
 };
 
-const allVibeTags = Array.from(
-    new Set(berlinListings.flatMap((l) => l.vibeTags))
-);
+type SortOption = "newest" | "price_asc" | "price_desc" | "size_desc" | "rooms_desc";
 
-const allSources = Array.from(
-    new Set(berlinListings.map((l) => l.source))
-);
-
-const allDistricts = Array.from(
-    new Set(berlinListings.map((l) => l.district))
-);
+const SORT_MAP: Record<SortOption, { sortBy: string; sortOrder: "asc" | "desc" }> = {
+    newest: { sortBy: "firstSeenAt", sortOrder: "desc" },
+    price_asc: { sortBy: "warmRentAmount", sortOrder: "asc" },
+    price_desc: { sortBy: "warmRentAmount", sortOrder: "desc" },
+    size_desc: { sortBy: "areaM2", sortOrder: "desc" },
+    rooms_desc: { sortBy: "rooms", sortOrder: "desc" },
+};
 
 export default function SearchPage() {
     const [filters, setFilters] = useState<Filters>({
-        district: "",
+        city: "",
         minPrice: "",
         maxPrice: "",
         minSize: "",
         maxSize: "",
         rooms: "",
         source: "",
-        maxCommute: "",
-        vibeTags: [],
+        q: "",
+        isWBSRequired: "",
     });
 
-    const [sortBy, setSortBy] = useState<"relevance" | "price_asc" | "price_desc" | "size_desc" | "newest">("relevance");
+    const [sortBy, setSortBy] = useState<SortOption>("newest");
+    const [listings, setListings] = useState<Listing[]>([]);
+    const [total, setTotal] = useState(0);
+    const [page, setPage] = useState(1);
+    const [loading, setLoading] = useState(false);
 
-    const filteredListings = useMemo(() => {
-        let result = [...berlinListings];
-
-        if (filters.district) {
-            result = result.filter((l) => l.district === filters.district);
+    const fetchListings = useCallback(async (currentPage: number) => {
+        setLoading(true);
+        try {
+            const sort = SORT_MAP[sortBy];
+            const res: ListingsResponse = await getListings({
+                page: currentPage,
+                limit: 24,
+                sortBy: sort.sortBy,
+                sortOrder: sort.sortOrder,
+                ...(filters.q && { q: filters.q }),
+                ...(filters.source && { source: filters.source }),
+                ...(filters.city && { city: filters.city }),
+                ...(filters.minPrice && { minWarmRent: Number(filters.minPrice) }),
+                ...(filters.maxPrice && { maxWarmRent: Number(filters.maxPrice) }),
+                ...(filters.minSize && { minAreaM2: Number(filters.minSize) }),
+                ...(filters.maxSize && { maxAreaM2: Number(filters.maxSize) }),
+                ...(filters.rooms && { minRooms: Number(filters.rooms) }),
+                ...(filters.isWBSRequired && { isWBSRequired: filters.isWBSRequired === "true" }),
+            });
+            setListings(res.data);
+            setTotal(res.meta.total);
+        } catch {
+            setListings([]);
+            setTotal(0);
+        } finally {
+            setLoading(false);
         }
-        if (filters.minPrice) {
-            result = result.filter((l) => l.monthlyRentEur >= Number(filters.minPrice));
-        }
-        if (filters.maxPrice) {
-            result = result.filter((l) => l.monthlyRentEur <= Number(filters.maxPrice));
-        }
-        if (filters.minSize) {
-            result = result.filter((l) => l.sizeM2 >= Number(filters.minSize));
-        }
-        if (filters.maxSize) {
-            result = result.filter((l) => l.sizeM2 <= Number(filters.maxSize));
-        }
-        if (filters.rooms) {
-            result = result.filter((l) => l.rooms >= Number(filters.rooms));
-        }
-        if (filters.source) {
-            result = result.filter((l) => l.source === filters.source);
-        }
-        if (filters.maxCommute) {
-            result = result.filter((l) => l.commuteMinutesToCenter <= Number(filters.maxCommute));
-        }
-        if (filters.vibeTags.length > 0) {
-            result = result.filter((l) =>
-                filters.vibeTags.some((tag) => l.vibeTags.includes(tag))
-            );
-        }
-
-        switch (sortBy) {
-            case "price_asc":
-                result.sort((a, b) => a.monthlyRentEur - b.monthlyRentEur);
-                break;
-            case "price_desc":
-                result.sort((a, b) => b.monthlyRentEur - a.monthlyRentEur);
-                break;
-            case "size_desc":
-                result.sort((a, b) => b.sizeM2 - a.sizeM2);
-                break;
-            case "newest":
-                result.reverse();
-                break;
-        }
-
-        return result;
     }, [filters, sortBy]);
 
-    function toggleVibeTag(tag: string) {
-        setFilters((prev) => ({
-            ...prev,
-            vibeTags: prev.vibeTags.includes(tag)
-                ? prev.vibeTags.filter((t) => t !== tag)
-                : [...prev.vibeTags, tag],
-        }));
-    }
+    useEffect(() => {
+        setPage(1);
+        fetchListings(1);
+    }, [fetchListings]);
 
     function clearFilters() {
         setFilters({
-            district: "",
+            city: "",
             minPrice: "",
             maxPrice: "",
             minSize: "",
             maxSize: "",
             rooms: "",
             source: "",
-            maxCommute: "",
-            vibeTags: [],
+            q: "",
+            isWBSRequired: "",
         });
     }
+
+    function displayRent(listing: Listing): string {
+        if (listing.warmRentAmount != null) return `€${listing.warmRentAmount}`;
+        if (listing.coldRentAmount != null) return `€${listing.coldRentAmount}`;
+        return "N/A";
+    }
+
+    const totalPages = Math.max(1, Math.ceil(total / 24));
 
     return (
         <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-8 md:px-8">
             <FeaturePageIntro
                 eyebrow="Search"
                 title="Find Berlin flats in one place"
-                description="This page is your unified listing browser. Budenfinder aggregates signals from multiple Berlin sources (including Genossenschaft-friendly filters), applies Mietpreisbremse-style checks where data allows, and lets you slice by district, rent, size, rooms, commute, and vibe — so cooperative members and budget hunters see the cheapest legal options first."
+                description="This page is your unified listing browser. Lucid Intelligence aggregates signals from multiple Berlin sources (including Genossenschaft-friendly filters), applies Mietpreisbremse-style checks where data allows, and lets you slice by city, rent, size, rooms, and WBS — so cooperative members and budget hunters see the cheapest legal options first."
                 howItWorks={[
-                    "Set filters on the left: district, price band, square metres, rooms, source (e.g. Genossenschaft), commute cap, and vibe tags.",
-                    "We rank and filter the in-app Berlin dataset instantly; each card links to detail and apply flows.",
+                    "Set filters on the left: city, price band, square metres, rooms, source, WBS requirement, and text search.",
+                    "We query the backend listing database — each card links to detail and apply flows.",
                     "Switch sort order (price, size, newest) to stress-test affordability against your shareholder or personal budget.",
                     "Shortlist favourites and continue in Application Tracker or Chat if you need wording or eligibility help.",
                 ]}
             />
             <section className="flex flex-col justify-between gap-4 rounded-2xl bg-surface-container-low px-6 py-4 shadow-sm sm:flex-row sm:items-center">
                 <p className="font-sans text-sm text-on-surface/80">
-                    <span className="font-mono text-2xl font-bold text-primary">{filteredListings.length}</span> listings
+                    <span className="font-mono text-2xl font-bold text-primary">{total}</span> listings
                     match your current filters.
                 </p>
             </section>
 
-            {/* Filters — white panel reads clearly on bg-surface (fixes low-contrast ds-section tint) */}
-            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8 dark:border-slate-700 dark:bg-slate-900">
+            {/* Filters */}
+            <section className="ds-section">
                 <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-title text-primary">Filters</h2>
+                    <h2 className="text-title text-on-background">Filters</h2>
                     <button
                         onClick={clearFilters}
                         className="text-sm text-primary hover:text-primary-hover"
@@ -151,70 +137,79 @@ export default function SearchPage() {
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    {/* District */}
+                    {/* Text search */}
                     <div>
-                        <label className="text-label mb-1 block text-primary">District</label>
-                        <select
-                            value={filters.district}
-                            onChange={(e) => setFilters({ ...filters, district: e.target.value })}
-                            className="ds-input w-full text-primary placeholder:text-primary/45"
-                        >
-                            <option value="">All districts</option>
-                            {allDistricts.map((d) => (
-                                <option key={d} value={d}>{d}</option>
-                            ))}
-                        </select>
+                        <label className="text-label mb-1 block text-muted">Search</label>
+                        <input
+                            type="text"
+                            value={filters.q}
+                            onChange={(e) => setFilters({ ...filters, q: e.target.value })}
+                            placeholder="Title or address…"
+                            className="ds-input w-full"
+                        />
+                    </div>
+
+                    {/* City */}
+                    <div>
+                        <label className="text-label mb-1 block text-muted">City</label>
+                        <input
+                            type="text"
+                            value={filters.city}
+                            onChange={(e) => setFilters({ ...filters, city: e.target.value })}
+                            placeholder="e.g. Berlin"
+                            className="ds-input w-full"
+                        />
                     </div>
 
                     {/* Price Range */}
                     <div>
-                        <label className="text-label mb-1 block text-primary">Price Range (EUR)</label>
+                        <label className="text-label mb-1 block text-muted">Warm Rent (EUR)</label>
                         <div className="flex gap-2">
                             <input
                                 type="number"
                                 value={filters.minPrice}
                                 onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })}
                                 placeholder="Min"
-                                className="ds-input w-full text-primary placeholder:text-primary/45"
+                                className="ds-input w-full"
                             />
                             <input
                                 type="number"
                                 value={filters.maxPrice}
                                 onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })}
                                 placeholder="Max"
-                                className="ds-input w-full text-primary placeholder:text-primary/45"
+                                className="ds-input w-full"
                             />
                         </div>
                     </div>
 
                     {/* Size Range */}
                     <div>
-                        <label className="text-label mb-1 block text-primary">Size (m²)</label>
+                        <label className="text-label mb-1 block text-muted">Size (m²)</label>
                         <div className="flex gap-2">
                             <input
                                 type="number"
                                 value={filters.minSize}
                                 onChange={(e) => setFilters({ ...filters, minSize: e.target.value })}
                                 placeholder="Min"
-                                className="ds-input w-full text-primary placeholder:text-primary/45"
+                                className="ds-input w-full"
                             />
                             <input
                                 type="number"
                                 value={filters.maxSize}
                                 onChange={(e) => setFilters({ ...filters, maxSize: e.target.value })}
                                 placeholder="Max"
-                                className="ds-input w-full text-primary placeholder:text-primary/45"
+                                className="ds-input w-full"
                             />
                         </div>
                     </div>
 
                     {/* Rooms */}
                     <div>
-                        <label className="text-label mb-1 block text-primary">Rooms</label>
+                        <label className="text-label mb-1 block text-muted">Rooms</label>
                         <select
                             value={filters.rooms}
                             onChange={(e) => setFilters({ ...filters, rooms: e.target.value })}
-                            className="ds-input w-full text-primary placeholder:text-primary/45"
+                            className="ds-input w-full"
                         >
                             <option value="">Any</option>
                             <option value="1">1+ room</option>
@@ -226,70 +221,44 @@ export default function SearchPage() {
 
                     {/* Source */}
                     <div>
-                        <label className="text-label mb-1 block text-primary">Source</label>
-                        <select
+                        <label className="text-label mb-1 block text-muted">Source</label>
+                        <input
+                            type="text"
                             value={filters.source}
                             onChange={(e) => setFilters({ ...filters, source: e.target.value })}
-                            className="ds-input w-full text-primary placeholder:text-primary/45"
-                        >
-                            <option value="">All sources</option>
-                            {allSources.map((s) => (
-                                <option key={s} value={s}>
-                                    {s === "genossenschaft" ? "Wohnungsgenossenschaften" : s.charAt(0).toUpperCase() + s.slice(1)}
-                                </option>
-                            ))}
-                        </select>
+                            placeholder="e.g. inberlinwohnen"
+                            className="ds-input w-full"
+                        />
                     </div>
 
-                    {/* Max Commute */}
+                    {/* WBS */}
                     <div>
-                        <label className="text-label mb-1 block text-primary">Max Commute (min)</label>
+                        <label className="text-label mb-1 block text-muted">WBS Required</label>
                         <select
-                            value={filters.maxCommute}
-                            onChange={(e) => setFilters({ ...filters, maxCommute: e.target.value })}
-                            className="ds-input w-full text-primary placeholder:text-primary/45"
+                            value={filters.isWBSRequired}
+                            onChange={(e) => setFilters({ ...filters, isWBSRequired: e.target.value })}
+                            className="ds-input w-full"
                         >
                             <option value="">Any</option>
-                            <option value="15">15 min</option>
-                            <option value="20">20 min</option>
-                            <option value="25">25 min</option>
-                            <option value="30">30 min</option>
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
                         </select>
                     </div>
 
                     {/* Sort */}
                     <div>
-                        <label className="text-label mb-1 block text-primary">Sort by</label>
+                        <label className="text-label mb-1 block text-muted">Sort by</label>
                         <select
                             value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                            className="ds-input w-full text-primary placeholder:text-primary/45"
+                            onChange={(e) => setSortBy(e.target.value as SortOption)}
+                            className="ds-input w-full"
                         >
-                            <option value="relevance">Relevance</option>
+                            <option value="newest">Newest first</option>
                             <option value="price_asc">Price: Low to High</option>
                             <option value="price_desc">Price: High to Low</option>
                             <option value="size_desc">Size: Largest first</option>
-                            <option value="newest">Newest first</option>
+                            <option value="rooms_desc">Rooms: Most first</option>
                         </select>
-                    </div>
-                </div>
-
-                {/* Vibe Tags */}
-                <div className="mt-4">
-                    <label className="text-label mb-2 block text-primary">Vibe & Lifestyle</label>
-                    <div className="flex flex-wrap gap-2">
-                        {allVibeTags.map((tag) => (
-                            <button
-                                key={tag}
-                                onClick={() => toggleVibeTag(tag)}
-                                className={`rounded-full px-4 py-1.5 text-sm transition ${filters.vibeTags.includes(tag)
-                                        ? "bg-primary text-white"
-                                        : "bg-surface-card text-primary ghost-border hover:bg-surface-high hover:text-primary-hover"
-                                    }`}
-                            >
-                                {tag}
-                            </button>
-                        ))}
                     </div>
                 </div>
             </section>
@@ -298,7 +267,11 @@ export default function SearchPage() {
             <section className="ds-card p-6">
                 <h2 className="text-title mb-4 text-on-background">Search Results</h2>
 
-                {filteredListings.length === 0 ? (
+                {loading ? (
+                    <div className="flex items-center justify-center py-12">
+                        <p className="text-muted">Loading listings…</p>
+                    </div>
+                ) : listings.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
                         <p className="text-muted">No listings match your filters</p>
                         <button
@@ -310,44 +283,80 @@ export default function SearchPage() {
                     </div>
                 ) : (
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {filteredListings.map((listing) => (
+                        {listings.map((listing) => (
                             <a
                                 key={listing.id}
                                 href={`/listings/${listing.id}`}
                                 className="ds-card group p-4"
                             >
                                 <div className="aspect-video w-full overflow-hidden rounded-xl bg-surface-low">
-                                    <div className="flex h-full items-center justify-center text-4xl">
-                                        🏠
-                                    </div>
+                                    {listing.imageUrls.length > 0 && COMPANY_BASE_URLS[listing.source] ? (
+                                        <img
+                                            src={`${COMPANY_BASE_URLS[listing.source] ?? ''}${listing.imageUrls[0]}`}
+                                            alt={listing.title}
+                                            className="h-full w-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="flex h-full items-center justify-center text-4xl">
+                                            🏠
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="mt-3">
                                     <div className="flex items-start justify-between">
                                         <h3 className="font-semibold group-hover:underline">{listing.title}</h3>
-                                        {listing.source === "genossenschaft" && (
-                                            <span className="rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
-                                                Genossenschaft
+                                        {listing.isWBSRequired && (
+                                            <span className="rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                                                WBS
                                             </span>
                                         )}
                                     </div>
-                                    <p className="mt-1 text-sm text-muted">{listing.district}</p>
+                                    <p className="mt-1 text-sm text-muted">{listing.address ?? listing.city}</p>
                                     <div className="mt-2 flex items-center justify-between">
-                                        <span className="text-lg font-bold text-on-background">€{listing.monthlyRentEur}</span>
-                                        <span className="text-sm text-muted">{listing.sizeM2}m² · {listing.rooms} rooms</span>
+                                        <span className="text-lg font-bold text-on-background">{displayRent(listing)}</span>
+                                        <span className="text-sm text-muted">
+                                            {listing.areaM2 != null ? `${listing.areaM2}m²` : ""}
+                                            {listing.rooms != null ? ` · ${listing.rooms} rooms` : ""}
+                                        </span>
                                     </div>
-                                    <div className="mt-2 flex flex-wrap gap-1">
-                                        {listing.vibeTags.slice(0, 3).map((tag) => (
-                                            <span
-                                                key={tag}
-                                                className="rounded-full bg-surface-low px-2 py-0.5 text-xs text-muted"
-                                            >
-                                                {tag}
-                                            </span>
-                                        ))}
-                                    </div>
+                                    {listing.features.length > 0 && (
+                                        <div className="mt-2 flex flex-wrap gap-1">
+                                            {listing.features.slice(0, 3).map((feat) => (
+                                                <span
+                                                    key={feat}
+                                                    className="rounded-full bg-surface-low px-2 py-0.5 text-xs text-muted"
+                                                >
+                                                    {feat}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </a>
                         ))}
+                    </div>
+                )}
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                    <div className="mt-6 flex items-center justify-center gap-3">
+                        <button
+                            disabled={page <= 1}
+                            onClick={() => { const p = page - 1; setPage(p); fetchListings(p); }}
+                            className="btn-secondary !h-auto !py-1.5 !px-3 text-sm disabled:opacity-40"
+                        >
+                            Previous
+                        </button>
+                        <span className="text-sm text-muted">
+                            Page {page} of {totalPages}
+                        </span>
+                        <button
+                            disabled={page >= totalPages}
+                            onClick={() => { const p = page + 1; setPage(p); fetchListings(p); }}
+                            className="btn-secondary !h-auto !py-1.5 !px-3 text-sm disabled:opacity-40"
+                        >
+                            Next
+                        </button>
                     </div>
                 )}
             </section>

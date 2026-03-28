@@ -45,9 +45,9 @@ export async function GET(request: NextRequest) {
 
     const districtSummary = Object.entries(districtRentBenchmarkPerM2)
         .map(([district, pricePerM2]) => {
-            const count = berlinListings.filter((l) => l.district === district).length;
+            const count = berlinListings.filter((l) => l.city === district).length;
             const coopCount = berlinListings.filter(
-                (l) => l.district === district && l.source === "genossenschaft",
+                (l) => l.city === district && l.source === "genossenschaft",
             ).length;
             return `${district}: EUR ${pricePerM2}/m2, ${count} listings (${coopCount} co-op)`;
         })
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
     const totalListings = berlinListings.length;
     const coopListings = berlinListings.filter((l) => l.source === "genossenschaft").length;
     const avgRent = Math.round(
-        berlinListings.reduce((sum, l) => sum + l.monthlyRentEur, 0) / totalListings,
+        berlinListings.reduce((sum, l) => sum + Number(l.warmRentAmount ?? l.coldRentAmount ?? 0), 0) / totalListings,
     );
 
     const prompt = [

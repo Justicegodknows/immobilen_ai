@@ -1,9 +1,10 @@
 import { performance } from 'node:perf_hooks';
 import type { FastifyPluginCallback } from 'fastify';
+import fp from 'fastify-plugin';
 
 const requestStartTimes = new WeakMap<object, number>();
 
-export const sharedMiddleware: FastifyPluginCallback = (app, _options, done): void => {
+const middlewarePlugin: FastifyPluginCallback = (app, _options, done): void => {
   app.addHook('onRequest', (request, reply, hookDone) => {
     if (!reply.hasHeader('x-request-id')) {
       reply.header('x-request-id', request.id);
@@ -23,3 +24,5 @@ export const sharedMiddleware: FastifyPluginCallback = (app, _options, done): vo
 
   done();
 };
+
+export const sharedMiddleware = fp(middlewarePlugin, { name: 'shared-middleware' });

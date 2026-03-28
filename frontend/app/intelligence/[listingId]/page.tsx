@@ -55,9 +55,10 @@ export default function ListingIntelligencePage({ params, searchParams }: Listin
 
     const successProbability = useMemo(() => {
         let probability = 50;
+        const rent = Number(listing.warmRentAmount ?? listing.coldRentAmount ?? 0);
 
         // Income factor (rent should be < 30% of net income)
-        const rentToIncomeRatio = listing.monthlyRentEur / profile.income;
+        const rentToIncomeRatio = rent / profile.income;
         if (rentToIncomeRatio < 0.25) probability += 20;
         else if (rentToIncomeRatio < 0.3) probability += 15;
         else if (rentToIncomeRatio < 0.35) probability += 5;
@@ -73,8 +74,8 @@ export default function ListingIntelligencePage({ params, searchParams }: Listin
         else probability -= 15;
 
         // Household fit
-        if (listing.rooms >= profile.householdSize) probability += 10;
-        if (listing.rooms > profile.householdSize + 1) probability -= 5;
+        if ((listing.rooms ?? 0) >= profile.householdSize) probability += 10;
+        if ((listing.rooms ?? 0) > profile.householdSize + 1) probability -= 5;
 
         // Genossenschaft bonus
         if (listing.source === "genossenschaft") {
@@ -85,16 +86,12 @@ export default function ListingIntelligencePage({ params, searchParams }: Listin
         if (!priceAssessment.isOverpriced) probability += 10;
         else probability -= 10;
 
-        // District competition adjustment
-        if (listing.district === "Prenzlauer Berg") probability -= 10;
-        if (listing.district === "Neukoelln") probability -= 5;
-        if (listing.district === "Lichtenberg" || listing.district === "Pankow") probability += 5;
-
         return Math.min(95, Math.max(10, probability));
     }, [listing, profile, priceAssessment]);
 
     const probabilityBreakdown = useMemo(() => {
-        const rentToIncomeRatio = listing.monthlyRentEur / profile.income;
+        const rent = Number(listing.warmRentAmount ?? listing.coldRentAmount ?? 0);
+        const rentToIncomeRatio = rent / profile.income;
         const items = [
             {
                 name: "Income Stability",
@@ -121,20 +118,15 @@ export default function ListingIntelligencePage({ params, searchParams }: Listin
             },
             {
                 name: "Listing Fit",
-                score: listing.rooms >= profile.householdSize ? 90 : 60,
+                score: (listing.rooms ?? 0) >= profile.householdSize ? 90 : 60,
                 weight: 15,
-                note: `${listing.rooms} rooms for ${profile.householdSize} person(s)`,
+                note: `${listing.rooms ?? "?"} rooms for ${profile.householdSize} person(s)`,
             },
             {
                 name: "Market Competition",
-                score: listing.district === "Prenzlauer Berg" ? 50 : listing.district === "Lichtenberg" ? 80 : 65,
+                score: 65,
                 weight: 15,
-                note: `${listing.district} - ${listing.district === "Prenzlauer Berg"
-                    ? "High competition area"
-                    : listing.district === "Lichtenberg"
-                        ? "Moderate competition"
-                        : "Average competition"
-                    }`,
+                note: `${listing.city ?? "Berlin"} - Average competition`,
             },
         ];
         return items;
@@ -173,14 +165,6 @@ export default function ListingIntelligencePage({ params, searchParams }: Listin
             });
         }
 
-        if (listing.commuteMinutesToCenter > 25) {
-            items.push({
-                type: "info",
-                title: "Location insight",
-                description: `${listing.commuteMinutesToCenter} minutes to center. Consider BVG monthly pass (€69) for commuting.`,
-            });
-        }
-
         return items;
     }, [listing, profile, priceAssessment]);
 
@@ -205,7 +189,7 @@ export default function ListingIntelligencePage({ params, searchParams }: Listin
         let active = true;
 
         async function loadOverlay() {
-            const response = await fetch(`/api/neighborhoods/map?district=${encodeURIComponent(listing.district)}`);
+            const response = await fetch(`/api/neighborhoods/map?district=${encodeURIComponent(listing.city ?? "Berlin")}`);
             if (!response.ok) return;
 
             const data = (await response.json()) as NeighborhoodMapResponse;
@@ -218,7 +202,7 @@ export default function ListingIntelligencePage({ params, searchParams }: Listin
         return () => {
             active = false;
         };
-    }, [listing.district]);
+    }, [listing.city]);
 
     return (
         <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-8 md:px-8">
@@ -345,8 +329,8 @@ export default function ListingIntelligencePage({ params, searchParams }: Listin
                 <div className="mt-4 grid gap-4 md:grid-cols-4">
                     <div className="rounded-xl bg-surface-low p-4">
                         <p className="text-sm text-muted">Listing Price</p>
-                        <p className="mt-1 text-2xl font-bold">€{listing.monthlyRentEur}</p>
-                        <p className="text-xs text-muted">{listing.sizeM2}m² = €{(listing.monthlyRentEur / listing.sizeM2).toFixed(1)}/m²</p>
+                        <p className="mt-1 text-2xl font-bold">€{Number(listing.warmRentAmount ?? listing.coldRentAmount ?? 0)}</p>
+                        <p className="text-xs text-muted">{listing.areaM2 ?? 0}m² = €{((listing.areaM2 ?? 0) > 0 ? (Number(listing.warmRentAmount ?? listing.coldRentAmount ?? 0) / Number(listing.areaM2)).toFixed(1) : "N/A")}/m²</p>
                     </div>
                     <div className="rounded-xl bg-surface-low p-4">
                         <p className="text-sm text-muted">Fair Market Value</p>
@@ -406,7 +390,7 @@ export default function ListingIntelligencePage({ params, searchParams }: Listin
                     mapOverlay ? (
                         <BerlinNeighborhoodMap
                             overlay={mapOverlay}
-                            selectedDistrict={listing.district}
+                            selectedDistrict={listing.city ?? "Berlin"}
                             heightClassName="h-[360px]"
                         />
                     ) : (
@@ -468,7 +452,7 @@ export default function ListingIntelligencePage({ params, searchParams }: Listin
 
                 <div className="mt-4 grid gap-4 md:grid-cols-3">
                     {berlinListings
-                        .filter((l) => l.id !== listing.id && l.district === listing.district)
+                        .filter((l) => l.id !== listing.id && l.city === listing.city)
                         .slice(0, 3)
                         .map((similar) => (
                             <Link
@@ -477,15 +461,15 @@ export default function ListingIntelligencePage({ params, searchParams }: Listin
                                 className="ds-card p-4 transition hover:shadow-sm"
                             >
                                 <p className="font-medium">{similar.title}</p>
-                                <p className="text-sm text-muted">{similar.district}</p>
+                                <p className="text-sm text-muted">{similar.city ?? "Berlin"}</p>
                                 <div className="mt-2 flex items-center justify-between">
-                                    <span className="font-bold">€{similar.monthlyRentEur}</span>
-                                    <span className="text-xs text-muted">{similar.sizeM2}m²</span>
+                                    <span className="font-bold">€{similar.warmRentAmount ?? similar.coldRentAmount ?? "N/A"}</span>
+                                    <span className="text-xs text-muted">{similar.areaM2 ?? "?"}m²</span>
                                 </div>
                             </Link>
                         ))}
-                    {berlinListings.filter((l) => l.id !== listing.id && l.district === listing.district).length === 0 && (
-                        <p className="text-sm text-muted">No similar listings in this district. Try expanding your search.</p>
+                    {berlinListings.filter((l) => l.id !== listing.id && l.city === listing.city).length === 0 && (
+                        <p className="text-sm text-muted">No similar listings in this area. Try expanding your search.</p>
                     )}
                 </div>
             </section >

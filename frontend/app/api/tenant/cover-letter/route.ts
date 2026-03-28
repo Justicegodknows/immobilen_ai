@@ -34,15 +34,14 @@ function streamFallbackLetter(letter: string) {
 }
 
 function buildFallbackLetter(input: {
-    landlordName: string;
     listingTitle: string;
-    district: string;
+    city: string;
     income: string;
     employmentMonths: string;
     applicantName: string;
     personalMessage?: string;
 }) {
-    return `Dear ${input.landlordName},\n\nI am very interested in your apartment \"${input.listingTitle}\" in ${input.district}. I have a stable employment record (${input.employmentMonths}), a monthly net income of ${input.income}, and complete application documents including SCHUFA.\n\n${input.personalMessage ? `${input.personalMessage}\n\n` : ""}I would be happy to introduce myself in a viewing and can provide my full document bundle immediately.\n\nKind regards,\n${input.applicantName}`;
+    return `Dear Landlord,\n\nI am very interested in your apartment \"${input.listingTitle}\" in ${input.city}. I have a stable employment record (${input.employmentMonths}), a monthly net income of ${input.income}, and complete application documents including SCHUFA.\n\n${input.personalMessage ? `${input.personalMessage}\n\n` : ""}I would be happy to introduce myself in a viewing and can provide my full document bundle immediately.\n\nKind regards,\n${input.applicantName}`;
 }
 
 export async function POST(request: NextRequest) {
@@ -72,9 +71,8 @@ export async function POST(request: NextRequest) {
         : `${demoTenant.stableEmploymentMonths} months`;
 
     const fallbackLetter = buildFallbackLetter({
-        landlordName: listing.landlordName,
         listingTitle: listing.title,
-        district: listing.district,
+        city: listing.city ?? "Berlin",
         income,
         employmentMonths,
         applicantName,
@@ -113,11 +111,10 @@ export async function POST(request: NextRequest) {
                 `Provider: Ollama at ${ollamaConfig.baseUrl}`,
                 `Model: ${ollamaConfig.model}`,
                 `Listing title: ${listing.title}`,
-                `District: ${listing.district}`,
-                `Address: ${listing.address}`,
-                `Landlord: ${listing.landlordName}`,
-                `Rent: EUR ${listing.monthlyRentEur}`,
-                `Size: ${listing.sizeM2}m2, rooms: ${listing.rooms}`,
+                `City: ${listing.city ?? "Berlin"}`,
+                `Address: ${listing.address ?? "Not specified"}`,
+                `Rent: EUR ${listing.warmRentAmount ?? listing.coldRentAmount ?? "N/A"}`,
+                `Size: ${listing.areaM2 ?? "N/A"}m2, rooms: ${listing.rooms ?? "N/A"}`,
                 `Listing source: ${listing.source}`,
                 `Applicant name: ${applicantName}`,
                 `Applicant income: ${income}`,

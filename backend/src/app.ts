@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import cors from '@fastify/cors';
 import type { FastifyInstance } from 'fastify';
 import healthRoutes from './api/health/health.routes';
 import listingsRoutes from './api/listings/listings.routes';
@@ -9,6 +10,9 @@ import { sharedMiddleware } from './shared/middleware/index';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({ logger: true });
+
+  // CORS — allow frontend origins
+  await app.register(cors, { origin: true });
 
   // Cross-cutting middleware: request ID, response time
   app.register(sharedMiddleware);
