@@ -1,9 +1,9 @@
 "use client";
 
-import { use, useMemo, useState } from "react";
-import { berlinListings, districtRentBenchmarkPerM2 } from "@/lib/data";
-import { calculatePriceAssessment } from "@/lib/scoring";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
+import type { Listing } from "@/lib/types";
+import { getListingById } from "@/lib/api";
 
 interface ListingDetailPageProps {
     params: Promise<{ id: string }>;
@@ -13,17 +13,35 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
     const [showApplyModal, setShowApplyModal] = useState(false);
     const { id } = use(params);
 
-    const listing = useMemo(() => {
-        return berlinListings.find((l) => l.id === id) || berlinListings[0];
+    const [listing, setListing] = useState<Listing | null>(null);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        getListingById(id)
+            .then(setListing)
+            .catch(() => setError("Listing not found."));
     }, [id]);
 
-    const priceAssessment = useMemo(() => {
-        return calculatePriceAssessment(listing);
-    }, [listing]);
+    if (error) {
+        return (
+            <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col items-center justify-center gap-4 px-4 py-16">
+                <p className="text-lg text-muted">{error}</p>
+                <Link href="/search" className="text-primary hover:underline">Back to Search</Link>
+            </main>
+        );
+    }
 
-    const pricePerM2 = listing.monthlyRentEur / listing.sizeM2;
-    const districtBenchmark = districtRentBenchmarkPerM2[listing.district] || 0;
-    const priceVsBenchmark = pricePerM2 - districtBenchmark;
+    if (!listing) {
+        return (
+            <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col items-center justify-center px-4 py-16">
+                <p className="text-muted">Loading…</p>
+            </main>
+        );
+    }
+
+    const rentDisplay = listing.warmRentAmount ?? listing.coldRentAmount ?? 0;
+    const area = listing.areaM2 ?? 0;
+    const pricePerM2 = area > 0 ? rentDisplay / area : 0;
 
     return (
         <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 py-8 md:px-8">
@@ -31,7 +49,7 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
             <nav className="text-sm text-muted">
                 <Link href="/search" className="hover:text-primary">Search</Link>
                 <span className="mx-2">/</span>
-                <span className="text-on-background">{listing.district}</span>
+                <span className="text-on-background">{listing.city ?? "Unknown"}</span>
                 <span className="mx-2">/</span>
                 <span className="text-on-background">{listing.title}</span>
             </nav>
@@ -43,20 +61,28 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
                     <section className="ds-card overflow-hidden">
                         {/* Image Gallery */}
                         <div className="aspect-video w-full bg-gradient-to-br from-surface-low to-surface-high">
-                            <div className="flex h-full items-center justify-center text-6xl">
-                                🏠
-                            </div>
+                            {listing.imageUrls.length > 0 ? (
+                                <img
+                                    src={listing.imageUrls[0]}
+                                    alt={listing.title}
+                                    className="h-full w-full object-cover"
+                                />
+                            ) : (
+                                <div className="flex h-full items-center justify-center text-6xl">
+                                    🏠
+                                </div>
+                            )}
                         </div>
 
                         <div className="p-6">
                             <div className="flex items-start justify-between">
                                 <div>
                                     <h1 className="text-headline text-on-background">{listing.title}</h1>
-                                    <p className="mt-1 text-muted">{listing.address}</p>
+                                    <p className="mt-1 text-muted">{listing.address ?? listing.city}</p>
                                 </div>
-                                {listing.source === "genossenschaft" && (
-                                    <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700">
-                                        🤝 Genossenschaft
+                                {listing.isWBSRequired && (
+                                    <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700">
+                                        WBS Required
                                     </span>
                                 )}
                             </div>
@@ -64,19 +90,23 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
                             {/* Key Stats */}
                             <div className="mt-6 grid grid-cols-4 gap-4 rounded-xl bg-surface-low p-4">
                                 <div className="text-center">
-                                    <p className="text-2xl font-bold text-primary">€{listing.monthlyRentEur}</p>
-                                    <p className="text-label text-muted">Monthly</p>
+                                    <p className="text-2xl font-bold text-primary">€{rentDisplay}</p>
+                                    <p className="text-label text-muted">
+                                        {listing.warmRentAmount != null ? "Warm" : "Cold"} Rent
+                                    </p>
                                 </div>
                                 <div className="text-center">
-                                    <p className="text-2xl font-bold text-on-background">{listing.sizeM2}</p>
+                                    <p className="text-2xl font-bold text-on-background">{area || "—"}</p>
                                     <p className="text-label text-muted">Square Meters</p>
                                 </div>
                                 <div className="text-center">
-                                    <p className="text-2xl font-bold text-on-background">{listing.rooms}</p>
+                                    <p className="text-2xl font-bold text-on-background">{listing.rooms ?? "—"}</p>
                                     <p className="text-label text-muted">Rooms</p>
                                 </div>
                                 <div className="text-center">
-                                    <p className="text-2xl font-bold text-on-background">€{pricePerM2.toFixed(1)}</p>
+                                    <p className="text-2xl font-bold text-on-background">
+                                        {pricePerM2 > 0 ? `€${pricePerM2.toFixed(1)}` : "—"}
+                                    </p>
                                     <p className="text-label text-muted">Per m²</p>
                                 </div>
                             </div>
@@ -85,97 +115,81 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
                             <div className="mt-6">
                                 <h2 className="text-title text-on-background">About this home</h2>
                                 <p className="mt-2 text-muted">
-                                    Beautiful {listing.rooms}-room apartment located in the heart of {listing.district}.
-                                    This {listing.sizeM2}m² space offers comfortable living with modern amenities.
-                                    Perfect for those who appreciate {listing.vibeTags.join(", ")} surroundings.
+                                    {listing.rooms ? `${listing.rooms}-room apartment` : "Apartment"} located in {listing.city ?? "Berlin"}.
+                                    {area > 0 && ` This ${area}m² space offers comfortable living.`}
+                                    {listing.freeFrom && ` Available from ${listing.freeFrom}.`}
                                 </p>
                             </div>
 
                             {/* Features */}
                             <div className="mt-6">
-                                <h2 className="text-title text-on-background">Features & Amenities</h2>
+                                <h2 className="text-title text-on-background">Details</h2>
                                 <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-3">
-                                    <FeatureItem icon="📍" label="District" value={listing.district} />
-                                    <FeatureItem icon="🚇" label="Commute" value={`${listing.commuteMinutesToCenter} min to center`} />
-                                    <FeatureItem icon="🔊" label="Noise Level" value={`${listing.noiseScore}/100`} />
-                                    <FeatureItem icon="🏢" label="Source" value={formatSource(listing.source)} />
-                                    <FeatureItem icon="👤" label="Contact" value={listing.landlordName} />
-                                    {listing.genossenschaftName && (
-                                        <FeatureItem icon="🤝" label="Co-op" value={listing.genossenschaftName} />
+                                    <FeatureItem icon="📍" label="City" value={listing.city ?? "—"} />
+                                    <FeatureItem icon="🏢" label="Source" value={listing.source} />
+                                    {listing.floor != null && (
+                                        <FeatureItem
+                                            icon="🪜"
+                                            label="Floor"
+                                            value={listing.maxFloor != null ? `${listing.floor}/${listing.maxFloor}` : `${listing.floor}`}
+                                        />
+                                    )}
+                                    {listing.yearOfConstruction != null && (
+                                        <FeatureItem icon="🏗️" label="Year Built" value={`${listing.yearOfConstruction}`} />
+                                    )}
+                                    {listing.heatingType && (
+                                        <FeatureItem icon="🔥" label="Heating" value={listing.heatingType} />
+                                    )}
+                                    {listing.energyEfficiencyClass && (
+                                        <FeatureItem icon="⚡" label="Energy Class" value={listing.energyEfficiencyClass} />
+                                    )}
+                                    {listing.coldRentAmount != null && listing.warmRentAmount != null && (
+                                        <FeatureItem icon="💰" label="Cold Rent" value={`€${listing.coldRentAmount}`} />
                                     )}
                                 </div>
                             </div>
 
-                            {/* Vibe Tags */}
-                            <div className="mt-6">
-                                <h2 className="text-title text-on-background">Neighborhood Vibe</h2>
-                                <div className="mt-3 flex flex-wrap gap-2">
-                                    {listing.vibeTags.map((tag) => (
-                                        <span
-                                            key={tag}
-                                            className="rounded-full bg-surface-low px-4 py-2 text-sm text-on-background"
-                                        >
-                                            {tag}
-                                        </span>
-                                    ))}
+                            {/* Features tags */}
+                            {listing.features.length > 0 && (
+                                <div className="mt-6">
+                                    <h2 className="text-title text-on-background">Features</h2>
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                        {listing.features.map((feat) => (
+                                            <span
+                                                key={feat}
+                                                className="rounded-full bg-surface-low px-4 py-2 text-sm text-on-background"
+                                            >
+                                                {feat}
+                                            </span>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </section>
 
-                    {/* Price Analysis */}
+                    {/* Price Info */}
                     <section className="ds-card mt-6 p-6">
-                        <h2 className="text-title text-on-background">📊 Price Analysis</h2>
-
+                        <h2 className="text-title text-on-background">📊 Price Details</h2>
                         <div className="mt-4 grid gap-4 md:grid-cols-3">
-                            <div className="rounded-xl bg-surface-low p-4">
-                                <p className="text-label text-muted">District Benchmark</p>
-                                <p className="mt-1 text-2xl font-bold text-on-background">€{districtBenchmark}/m²</p>
-                                <p className="text-xs text-muted">Average in {listing.district}</p>
-                            </div>
-                            <div className="rounded-xl bg-surface-low p-4">
-                                <p className="text-label text-muted">This Listing</p>
-                                <p className="mt-1 text-2xl font-bold text-on-background">€{pricePerM2.toFixed(1)}/m²</p>
-                                <p className="text-xs text-muted">€{listing.monthlyRentEur} total</p>
-                            </div>
-                            <div className={`rounded-xl p-4 ${priceVsBenchmark > 0 ? "bg-red-50" : "bg-green-50"}`}>
-                                <p className="text-label text-muted">vs Market</p>
-                                <p className={`mt-1 text-2xl font-bold ${priceVsBenchmark > 0 ? "text-red-600" : "text-green-600"}`}>
-                                    {priceVsBenchmark > 0 ? "+" : ""}€{priceVsBenchmark.toFixed(1)}/m²
-                                </p>
-                                <p className="text-xs text-muted">
-                                    {priceVsBenchmark > 0 ? "Above market" : "Below market"} rate
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="mt-4 rounded-xl bg-surface-low p-4">
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <p className="font-semibold text-on-background">AI Assessment</p>
-                                    <p className="mt-1 text-sm text-muted">
-                                        Expected fair rent: <span className="font-bold text-on-background">€{priceAssessment.expectedRentEur}</span>
-                                    </p>
-                                    <p className="text-sm text-muted">
-                                        Delta: <span className={priceAssessment.deltaEur > 0 ? "text-red-600 font-medium" : "text-green-600 font-medium"}>
-                                            {priceAssessment.deltaEur > 0 ? "+" : ""}€{priceAssessment.deltaEur}
-                                        </span>
-                                    </p>
+                            {listing.coldRentAmount != null && (
+                                <div className="rounded-xl bg-surface-low p-4">
+                                    <p className="text-label text-muted">Cold Rent</p>
+                                    <p className="mt-1 text-2xl font-bold text-on-background">€{listing.coldRentAmount}</p>
                                 </div>
-                                <div className={`rounded-full px-4 py-2 text-sm font-medium ${priceAssessment.isOverpriced
-                                    ? "bg-red-100 text-red-700"
-                                    : "bg-green-100 text-green-700"
-                                    }`}>
-                                    {priceAssessment.isOverpriced ? "Overpriced" : "Good Deal"}
+                            )}
+                            {listing.warmRentAmount != null && (
+                                <div className="rounded-xl bg-surface-low p-4">
+                                    <p className="text-label text-muted">Warm Rent</p>
+                                    <p className="mt-1 text-2xl font-bold text-on-background">€{listing.warmRentAmount}</p>
                                 </div>
-                            </div>
-                            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-high">
-                                <div
-                                    className={`h-full ${priceAssessment.confidence > 0.8 ? "bg-green-500" : priceAssessment.confidence > 0.6 ? "bg-yellow-500" : "bg-red-500"}`}
-                                    style={{ width: `${priceAssessment.confidence * 100}%` }}
-                                />
-                            </div>
-                            <p className="mt-1 text-xs text-muted">Confidence: {(priceAssessment.confidence * 100).toFixed(0)}%</p>
+                            )}
+                            {pricePerM2 > 0 && (
+                                <div className="rounded-xl bg-surface-low p-4">
+                                    <p className="text-label text-muted">Price per m²</p>
+                                    <p className="mt-1 text-2xl font-bold text-on-background">€{pricePerM2.toFixed(2)}</p>
+                                </div>
+                            )}
                         </div>
                     </section>
                 </div>
@@ -195,6 +209,17 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
                             >
                                 Apply for this home
                             </button>
+                            {listing.listingUrl && (
+                                <a
+                                    href={listing.listingUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="btn-secondary flex w-full items-center justify-center gap-2"
+                                >
+                                    <span>🔗</span>
+                                    View Original Listing
+                                </a>
+                            )}
                             <Link
                                 href={`/intelligence?listingId=${listing.id}`}
                                 className="btn-secondary flex w-full items-center justify-center gap-2"
@@ -207,17 +232,25 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
                         <div className="mt-6 pt-4">
                             <p className="text-label font-medium text-muted">Quick Stats</p>
                             <div className="mt-3 space-y-2 text-sm">
-                                <div className="flex justify-between">
-                                    <span className="text-muted">Commute to center</span>
-                                    <span className="font-medium text-on-background">{listing.commuteMinutesToCenter} min</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-muted">Noise level</span>
-                                    <span className="font-medium text-on-background">{listing.noiseScore}/100</span>
-                                </div>
+                                {listing.floor != null && (
+                                    <div className="flex justify-between">
+                                        <span className="text-muted">Floor</span>
+                                        <span className="font-medium text-on-background">
+                                            {listing.floor}{listing.maxFloor != null ? ` / ${listing.maxFloor}` : ""}
+                                        </span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between">
                                     <span className="text-muted">Price/m²</span>
-                                    <span className="font-medium text-on-background">€{pricePerM2.toFixed(1)}</span>
+                                    <span className="font-medium text-on-background">
+                                        {pricePerM2 > 0 ? `€${pricePerM2.toFixed(1)}` : "—"}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-muted">First seen</span>
+                                    <span className="font-medium text-on-background">
+                                        {new Date(listing.firstSeenAt).toLocaleDateString()}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -231,7 +264,7 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
                     <div className="ds-card w-full max-w-md p-6">
                         <h2 className="text-xl font-bold text-on-background">Start Application</h2>
                         <p className="mt-2 text-sm text-muted">
-                            You're applying for: <span className="font-medium text-on-background">{listing.title}</span>
+                            You&apos;re applying for: <span className="font-medium text-on-background">{listing.title}</span>
                         </p>
 
                         <div className="mt-6 space-y-3">
@@ -265,9 +298,4 @@ function FeatureItem({ icon, label, value }: { icon: string; label: string; valu
             </div>
         </div>
     );
-}
-
-function formatSource(source: string): string {
-    if (source === "genossenschaft") return "Genossenschaft";
-    return source.charAt(0).toUpperCase() + source.slice(1);
 }

@@ -8,15 +8,14 @@ import {
     ChatResponse,
     CoverLetterResponse,
     DocumentBundle,
-    ListingsResponse,
+    Listing,
     NeighborhoodMetrics,
     RejectionAnalysis,
     StoredDocument,
     TenantScoreResponse,
 } from "@/lib/types";
 import { readTextStream } from "@/lib/read-text-stream";
-
-type ListingWithAssessment = ListingsResponse["listings"][number];
+import { getListings } from "@/lib/api";
 
 type DocumentsPayload = {
     bundles: DocumentBundle[];
@@ -24,10 +23,9 @@ type DocumentsPayload = {
 };
 
 export function PlatformDashboard() {
-    const [district, setDistrict] = useState("");
     const [source, setSource] = useState("");
     const [loading, setLoading] = useState(false);
-    const [listings, setListings] = useState<ListingWithAssessment[]>([]);
+    const [listings, setListings] = useState<Listing[]>([]);
     const [selectedId, setSelectedId] = useState<string>("");
     const [score, setScore] = useState<TenantScoreResponse | null>(null);
     const [coverLetter, setCoverLetter] = useState("");
@@ -51,16 +49,18 @@ export function PlatformDashboard() {
         setScore(null);
         setCoverLetter("");
 
-        const params = new URLSearchParams();
-        if (district) params.set("district", district);
-        if (source) params.set("source", source);
-
-        const response = await fetch(`/api/listings?${params.toString()}`);
-        const data = (await response.json()) as ListingsResponse;
-
-        setListings(data.listings);
-        setSelectedId(data.listings[0]?.id ?? "");
-        setLoading(false);
+        try {
+            const res = await getListings({
+                ...(source && { source }),
+                limit: 20,
+            });
+            setListings(res.data);
+            setSelectedId(res.data[0]?.id ?? "");
+        } catch {
+            setListings([]);
+        } finally {
+            setLoading(false);
+        }
     }
 
     async function analyzeListing() {
@@ -156,9 +156,9 @@ export function PlatformDashboard() {
     }
 
     async function loadNeighborhoods() {
-        const queryDistrict = selectedListing?.district || district;
+        const queryCity = selectedListing?.city || "";
         const params = new URLSearchParams();
-        if (queryDistrict) params.set("district", queryDistrict);
+        if (queryCity) params.set("district", queryCity);
 
         const response = await fetch(`/api/neighborhoods?${params.toString()}`);
         const data = (await response.json()) as {
@@ -200,23 +200,16 @@ export function PlatformDashboard() {
                 </p>
             </section>
 
-            <section className="ds-section grid gap-4 md:grid-cols-4">
-                <input
-                    value={district}
-                    onChange={(event) => setDistrict(event.target.value)}
-                    placeholder="District (e.g. Pankow)"
-                    className="rounded-xl ds-input px-3 py-2"
-                />
+            <section className="ds-section grid gap-4 md:grid-cols-3">
                 <select
                     value={source}
                     onChange={(event) => setSource(event.target.value)}
                     className="rounded-xl ds-input px-3 py-2"
                 >
                     <option value="">All sources</option>
+                    <option value="inberlinwohnen">InBerlinWohnen</option>
                     <option value="immobilienscout24">ImmobilienScout24</option>
                     <option value="immowelt">ImmoWelt</option>
-                    <option value="kleinanzeigen">Kleinanzeigen</option>
-                    <option value="genossenschaft">Wohnungsgenossenschaften</option>
                 </select>
                 <button
                     onClick={searchListings}
@@ -285,13 +278,10 @@ export function PlatformDashboard() {
                             >
                                 <p className="font-semibold">{listing.title}</p>
                                 <p className="text-sm opacity-80">
-                                    {listing.district} | EUR {listing.monthlyRentEur} | {listing.sizeM2}m2
+                                    {listing.city ?? "—"} | EUR {listing.warmRentAmount ?? listing.coldRentAmount ?? "N/A"} | {listing.areaM2 ?? "—"}m²
                                 </p>
                                 <p className="mt-1 text-xs opacity-80">
                                     Source: {listing.source}
-                                    {listing.genossenschaftName
-                                        ? ` (${listing.genossenschaftName})`
-                                        : ""}
                                 </p>
                             </button>
                         ))}
@@ -305,17 +295,14 @@ export function PlatformDashboard() {
                     )}
                     {selectedListing && (
                         <div className="mt-3 space-y-2 text-sm">
-                            <p>Landlord: {selectedListing.landlordName}</p>
-                            <p>Commute: {selectedListing.commuteMinutesToCenter} min</p>
-                            <p>Noise score: {selectedListing.noiseScore} / 100</p>
-                            <p>
-                                Fair price check: expected EUR {selectedListing.priceAssessment.expectedRentEur}
-                                , delta EUR {selectedListing.priceAssessment.deltaEur}
-                            </p>
-                            <p>
-                                Overpriced: {selectedListing.priceAssessment.isOverpriced ? "Yes" : "No"}
-                            </p>
-                            <p>Vibe: {selectedListing.vibeTags.join(", ")}</p>
+                            <p>City: {selectedListing.city ?? "—"}</p>
+                            <p>Address: {selectedListing.address ?? "—"}</p>
+                            <p>Source: {selectedListing.source}</p>
+                            <p>Rooms: {selectedListing.rooms ?? "—"}</p>
+                            <p>Area: {selectedListing.areaM2 ?? "—"} m²</p>
+                            {selectedListing.features.length > 0 && (
+                                <p>Features: {selectedListing.features.join(", ")}</p>
+                            )}
                         </div>
                     )}
 

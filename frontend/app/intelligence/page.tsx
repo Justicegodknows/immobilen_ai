@@ -30,7 +30,7 @@ const districtStats = Object.entries(districtRentBenchmarkPerM2).map(([district,
     district,
     pricePerM2,
     avgRent: pricePerM2 * 55, // avg 55m2
-    listings: berlinListings.filter((l) => l.district === district).length,
+    listings: berlinListings.filter((l) => l.city === district || (l.address && l.address.includes(district))).length,
     trend: ((((i * 7 + 3) % 13) - 5) * 0.8).toFixed(1),
 }));
 
@@ -472,7 +472,7 @@ export default function IntelligencePage() {
                                         <div className="flex items-start justify-between">
                                             <div>
                                                 <p className="font-semibold text-on-background">{listing.title}</p>
-                                                <p className="text-sm text-muted">{listing.district}</p>
+                                                <p className="text-sm text-muted">{listing.city ?? "Berlin"}</p>
                                             </div>
                                             <div
                                                 className={`rounded-full px-3 py-1 text-sm font-bold ${probability >= 70
@@ -486,7 +486,7 @@ export default function IntelligencePage() {
                                             </div>
                                         </div>
                                         <div className="mt-3 flex items-center justify-between text-sm">
-                                            <span className="text-muted">€{listing.monthlyRentEur}/month</span>
+                                            <span className="text-muted">€{listing.warmRentAmount ?? listing.coldRentAmount ?? "N/A"}/month</span>
                                             <span className="text-muted">
                                                 {assessment.isOverpriced ? "Overpriced" : "Fair price"}
                                             </span>
@@ -611,18 +611,18 @@ function PredictionCard({
 
 function calculateMockProbability(listing: {
     id: string;
-    monthlyRentEur: number;
-    district: string;
+    warmRentAmount: number | null;
+    coldRentAmount: number | null;
+    city: string | null;
     source: string;
 }): number {
     // Mock probability calculation
     let prob = 50;
+    const rent = Number(listing.warmRentAmount ?? listing.coldRentAmount ?? 0);
 
-    if (listing.monthlyRentEur < 1000) prob += 20;
-    if (listing.monthlyRentEur > 1500) prob -= 15;
+    if (rent < 1000) prob += 20;
+    if (rent > 1500) prob -= 15;
     if (listing.source === "genossenschaft") prob += 10;
-    if (listing.district === "Lichtenberg" || listing.district === "Pankow") prob += 10;
-    if (listing.district === "Prenzlauer Berg") prob -= 10;
 
     return Math.min(95, Math.max(15, prob));
 }

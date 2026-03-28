@@ -6,12 +6,21 @@ import {
     TenantProfile,
     TenantScoreBreakdown,
 } from "@/lib/types";
-import { districtRentBenchmarkPerM2 } from "@/lib/data";
+
+function getRent(listing: Listing): number {
+    return Number(listing.warmRentAmount ?? listing.coldRentAmount ?? 0);
+}
+
+function getArea(listing: Listing): number {
+    return Number(listing.areaM2 ?? 0);
+}
 
 export function assessPrice(listing: Listing): PriceAssessment {
-    const baselinePerM2 = districtRentBenchmarkPerM2[listing.district] ?? 18;
-    const expectedRentEur = Math.round(baselinePerM2 * listing.sizeM2);
-    const deltaEur = listing.monthlyRentEur - expectedRentEur;
+    const rent = getRent(listing);
+    const area = getArea(listing);
+    const baselinePerM2 = 18; // Berlin average fallback
+    const expectedRentEur = Math.round(baselinePerM2 * area);
+    const deltaEur = rent - expectedRentEur;
 
     return {
         listingId: listing.id,
@@ -29,21 +38,22 @@ export function calculateTenantScore(
     tenant: TenantProfile,
     listing: Listing,
 ): TenantScoreBreakdown {
-    const incomeCoverage = tenant.monthlyNetIncomeEur / Math.max(listing.monthlyRentEur, 1);
+    const rent = getRent(listing);
+    const incomeCoverage = tenant.monthlyNetIncomeEur / Math.max(rent, 1);
     const incomeStability = Math.min(40, Math.round(incomeCoverage * 12));
 
     const documentCompleteness = tenant.hasSchufa ? 30 : 10;
 
     let householdFit = 10;
-    if (tenant.householdSize <= 2 && listing.rooms >= 2) householdFit += 10;
-    if (tenant.preferredDistricts.includes(listing.district)) householdFit += 10;
+    if (tenant.householdSize <= 2 && (listing.rooms ?? 0) >= 2) householdFit += 10;
+    if (listing.city && tenant.preferredDistricts.includes(listing.city)) householdFit += 10;
 
     const total = Math.min(100, incomeStability + documentCompleteness + householdFit);
 
     const notes: string[] = [];
     if (!tenant.hasSchufa) notes.push("Missing SCHUFA reduces application competitiveness.");
-    if (!tenant.preferredDistricts.includes(listing.district)) {
-        notes.push("District mismatch lowers preference fit.");
+    if (!listing.city || !tenant.preferredDistricts.includes(listing.city)) {
+        notes.push("Location mismatch lowers preference fit.");
     }
     if (incomeCoverage < 2.7) {
         notes.push("Income-to-rent ratio is below the ideal threshold.");
@@ -64,15 +74,10 @@ export function estimateSuccessProbability(
 ): SuccessProbability {
     let probability = tenantScore.total * 0.78;
 
-    if (listing.source === "genossenschaft") probability += 5;
-    if (listing.noiseScore > 55) probability -= 4;
-
     const bounded = Math.max(5, Math.min(95, Math.round(probability)));
     const reasons = [
         `Tenant profile score contributes ${Math.round(tenantScore.total * 0.7)} points.`,
-        listing.source === "genossenschaft"
-            ? "Genossenschaft listing gives an extra trust premium."
-            : "Marketplace listing tends to be more competitive.",
+        `Source: ${listing.source}.`,
     ];
 
     return {
@@ -86,40 +91,6 @@ export function matchGenossenschaft(
     tenant: TenantProfile,
     listing: Listing,
 ): GenossenschaftMatch | null {
-    if (listing.source !== "genossenschaft" || !listing.genossenschaftName) {
-        return null;
-    }
-
-    const reasons: string[] = [];
-    let eligible = true;
-
-    const rentRatio = tenant.monthlyNetIncomeEur / Math.max(listing.monthlyRentEur, 1);
-    if (rentRatio < 2.5) {
-        eligible = false;
-        reasons.push("Income-to-rent ratio below required threshold (2.5x).");
-    } else {
-        reasons.push("Income-to-rent ratio meets threshold.");
-    }
-
-    if (!tenant.hasSchufa) {
-        eligible = false;
-        reasons.push("Valid SCHUFA is required for this Genossenschaft.");
-    } else {
-        reasons.push("SCHUFA available.");
-    }
-
-    if (tenant.stableEmploymentMonths < 12) {
-        eligible = false;
-        reasons.push("Stable employment below 12 months.");
-    } else {
-        reasons.push("Employment stability requirement met.");
-    }
-
-    return {
-        listingId: listing.id,
-        genossenschaftName: listing.genossenschaftName,
-        isEligible: eligible,
-        eligibilityReasons: reasons,
-        handoffUrl: `https://apply.example.com/genossenschaften/${encodeURIComponent(listing.genossenschaftName)}`,
-    };
+    // Genossenschaft matching not available from backend scraper data
+    return null;
 }

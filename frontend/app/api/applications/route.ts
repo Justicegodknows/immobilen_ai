@@ -40,7 +40,6 @@ export async function POST(request: NextRequest) {
     const created = createApplication({
         tenantId: demoTenant.id ?? "tn-1001",
         listingId: body.listingId,
-        landlordId: listing.landlordId,
         documentBundleId: body.documentBundleId,
         coverLetter: body.coverLetter,
     });
