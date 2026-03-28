@@ -12,6 +12,12 @@ enum ScraperJobStatus {
   FAILED
 }
 
+enum MietpreisbremseVerdict {
+  COMPLIANT
+  BORDERLINE
+  EXCEEDS_RENT_CAP
+}
+
 model Listing {
   id                          String    @id @default(cuid())
   source                      String
@@ -43,7 +49,14 @@ model Listing {
   firstSeenAt                 DateTime  @default(now())
   lastSeenAt                  DateTime  @updatedAt
 
+  // Precomputed Mietpreisbremse assessment
+  mietpreisbremseVerdict              MietpreisbremseVerdict?
+  mietpreisbremseMaxLegalPerM2        Decimal?
+  mietpreisbremseListingRentPerM2     Decimal?
+  mietpreisbremseOverpaymentPercent   Decimal?
+
   @@unique([source, sourceListingId])
+  @@index([mietpreisbremseVerdict])
 }
 
 model ScraperJob {

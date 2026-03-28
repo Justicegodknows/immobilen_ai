@@ -8,6 +8,7 @@ import type {
   StandardListing,
 } from './scraper.types';
 import { processListingAlerts } from '../matcher/listing-matcher.service';
+import { syncListingVerdict } from '../mietpreisbremse/mietpreisbremse-sync.service';
 
 interface ListingAlertCandidate {
   id: string;
@@ -105,6 +106,8 @@ async function upsertListings(
     });
 
     upsertedCount++;
+    // Recompute persisted Mietpreisbremse verdict for the upserted listing
+    await syncListingVerdict(saved);
     if (existing === null) {
       newListings.push({
         id: saved.id,
