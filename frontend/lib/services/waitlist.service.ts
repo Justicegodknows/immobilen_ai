@@ -32,6 +32,13 @@ export async function createWaitlistSignup(body: WaitlistSignupBody): Promise<{ 
   }
 }
 
+export async function deleteWaitlistSignup(email: string): Promise<{ deleted: boolean }> {
+  const normalized = normalizeEmail(email);
+  const db = getDb();
+  const result = await db.waitlistSignup.deleteMany({ where: { email: normalized } });
+  return { deleted: result.count > 0 };
+}
+
 export async function recordQrOpen(): Promise<void> {
   const db = getDb();
   await db.waitlistQrOpen.create({ data: {} });

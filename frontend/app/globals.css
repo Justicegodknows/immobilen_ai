@@ -298,3 +298,14 @@ body {
   font-weight: 500;
   letter-spacing: 0.02em;
 }
+
+@keyframes slideInTop {
+  from {
+    transform: translateY(-16px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

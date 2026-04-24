@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 export function Navigation() {
     const pathname = usePathname();
+    if (pathname === "/") return null;
 
     const navItems = [
         { href: "/search", label: "Search" },
@@ -54,7 +55,7 @@ export function Navigation() {
                     </button>
                     <Link
                         href="/search"
-                        className="rounded-lg bg-primary px-6 py-2 font-semibold text-on-primary shadow-md shadow-primary/20 transition-all hover:opacity-90 active:scale-[0.98]"
+                        className="rounded-md bg-black px-6 py-2 font-semibold text-white transition-colors hover:bg-gray-900 active:scale-[0.98]"
                     >
                         Get Started
                     </Link>

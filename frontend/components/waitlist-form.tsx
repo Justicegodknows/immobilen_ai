@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import Link from "next/link";
 
 export type WaitlistFormSource = "landing_form" | "qr_landing";
 
@@ -50,6 +51,15 @@ export function WaitlistForm({ source = "landing_form" }: Props) {
                 <p className="text-lg font-medium text-primary">
                     ✅ You&apos;re on the list! We&apos;ll be in touch soon.
                 </p>
+                <p className="mt-3 text-sm text-[#64748B]">
+                    Changed your mind?{" "}
+                    <Link
+                        href={`/leave-waitlist?email=${encodeURIComponent(email)}`}
+                        className="underline underline-offset-2 hover:text-[#94a3b8] transition-colors"
+                    >
+                        Leave the waitlist
+                    </Link>
+                </p>
             </div>
         );
     }
@@ -63,12 +73,12 @@ export function WaitlistForm({ source = "landing_form" }: Props) {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
                 autoComplete="email"
-                className="w-full rounded-xl border-2 border-primary-container bg-surface px-4 py-3.5 font-sans text-on-background placeholder:text-on-surface/40 outline-none transition focus:border-primary focus:bg-surface-container-lowest"
+                className="w-full border border-gray-300 bg-white px-4 py-3.5 font-sans text-black placeholder:text-gray-400 outline-none transition focus:border-black"
             />
             <button
                 type="submit"
                 disabled={pending}
-                className="btn-primary-gradient w-full rounded-xl py-4 font-bold text-on-primary shadow-lg transition hover:-translate-y-0.5 hover:shadow-ambient disabled:opacity-60"
+                className="w-full rounded-md bg-black py-4 font-bold text-white transition hover:bg-gray-900 disabled:opacity-40"
             >
                 {pending ? "Joining…" : "Join the Waitlist"}
             </button>
