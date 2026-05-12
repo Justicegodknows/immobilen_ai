@@ -309,3 +309,40 @@ body {
     opacity: 1;
   }
 }
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes unlockReveal {
+  0% { transform: scale(0.92) translateY(12px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.step-enter {
+  animation: slideInFromRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.unlock-reveal {
+  animation: unlockReveal 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.unlock-backdrop-enter { animation: fadeIn 0.3s ease forwards; }
+.unlock-backdrop-exit { animation: fadeOut 0.4s ease forwards; }

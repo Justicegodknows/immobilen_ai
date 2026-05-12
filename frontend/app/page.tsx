@@ -285,7 +285,7 @@ export default function HomePage() {
                                     href="#waitlist"
                                     className="inline-block rounded-md bg-black px-8 py-4 text-base font-bold text-white transition-colors hover:bg-gray-900"
                                 >
-                                    Start Searching for Free
+                                    Join the Waitlist
                                 </a>
                                 <a
                                     href="#how-it-works"
