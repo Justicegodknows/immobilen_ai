@@ -372,6 +372,31 @@ export type NeighborhoodCommuteCorridor = {
     };
 };
 
+export type OnboardingFormData = {
+    name: string;
+    email: string;
+    phone?: string;
+    occupation?: string;
+    monthlyNetIncomeEur?: number;
+    stableEmploymentMonths?: string;
+    hasSchufa: boolean;
+    householdSize: number;
+    hasPets: boolean;
+    petsDescription?: string;
+    preferredDistricts: string[];
+    maxWarmRent?: number;
+    minRooms?: number;
+    minAreaM2?: number;
+    wbsRequired: boolean;
+};
+
+export type OnboardingStorage = {
+    tenantId?: string;
+    name?: string;
+    totalXp: number;
+    completedSteps: number[];
+};
+
 export type NeighborhoodMapResponse = {
     generatedAtIso: string;
     source: "berlin-open-data" | "fallback";

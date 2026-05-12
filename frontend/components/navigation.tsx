@@ -3,11 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+const APP_ENABLED = process.env.NEXT_PUBLIC_APP_ENABLED === "true";
+
 export function Navigation() {
     const pathname = usePathname();
-    if (pathname === "/") return null;
+    if (!APP_ENABLED || pathname === "/" || pathname === "/onboarding") return null;
 
     const navItems = [
+        { href: "/home", label: "Home" },
         { href: "/search", label: "Search" },
         { href: "/tracker", label: "Tracker" },
         { href: "/intelligence", label: "Intelligence" },
@@ -20,11 +23,11 @@ export function Navigation() {
     };
 
     return (
-        <nav className="fixed top-0 z-50 w-full border-b border-slate-100 bg-white/80 font-sans text-sm font-medium tracking-tight antialiased shadow-sm backdrop-blur-xl dark:border-white/5 dark:bg-slate-950/80 dark:shadow-none">
-            <div className="mx-auto flex h-20 max-w-screen-2xl items-center justify-between px-8">
+        <nav className="fixed top-0 z-50 w-full h-16 border-b border-gray-200 bg-white">
+            <div className="mx-auto flex h-full max-w-6xl items-center justify-between px-6 md:px-10">
                 <Link
                     href="/"
-                    className="text-xl font-bold tracking-tighter text-slate-900 dark:text-white"
+                    className="text-lg font-bold tracking-tighter text-black"
                     title="Budenfinder home"
                 >
                     Budenfinder
@@ -37,8 +40,8 @@ export function Navigation() {
                             href={item.href}
                             className={
                                 isActive(item.href)
-                                    ? "border-b-2 border-primary pb-1 font-semibold text-primary transition-colors dark:text-primary"
-                                    : "text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                                    ? "relative text-sm font-medium text-black after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-full after:bg-black"
+                                    : "relative text-sm font-medium text-gray-500 transition-colors hover:text-black after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:bg-black after:transition-all after:duration-200 hover:after:w-full"
                             }
                         >
                             {item.label}
@@ -46,20 +49,12 @@ export function Navigation() {
                     ))}
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <button
-                        type="button"
-                        className="hidden px-5 py-2 font-medium text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 md:block"
-                    >
-                        Sign In
-                    </button>
-                    <Link
-                        href="/search"
-                        className="rounded-md bg-black px-6 py-2 font-semibold text-white transition-colors hover:bg-gray-900 active:scale-[0.98]"
-                    >
-                        Get Started
-                    </Link>
-                </div>
+                <button
+                    type="button"
+                    className="rounded-md bg-black px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-gray-900"
+                >
+                    Sign In
+                </button>
             </div>
         </nav>
     );
@@ -69,6 +64,7 @@ export function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
     const pathname = usePathname();
 
     const navItems = [
+        { href: "/home", label: "Home" },
         { href: "/search", label: "Search" },
         { href: "/tracker", label: "Tracker" },
         { href: "/intelligence", label: "Intelligence" },
@@ -84,36 +80,44 @@ export function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
 
     return (
         <div className="fixed inset-0 z-50 md:hidden" onClick={onClose}>
-            <div className="absolute inset-0 bg-hero-dark/40 backdrop-blur-sm" />
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
             <div
-                className="absolute right-0 top-0 h-full w-64 bg-surface-container-lowest p-4 shadow-ambient"
+                className="absolute right-0 top-0 h-full w-64 bg-white p-6 shadow-lg"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="mb-6 flex items-center justify-between">
-                    <span className="font-bold text-slate-900 dark:text-white">Menu</span>
+                    <span className="text-lg font-bold tracking-tighter text-black">Budenfinder</span>
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-lg p-2 text-slate-600 hover:bg-surface-container-low dark:text-slate-400"
+                        className="p-1 text-gray-400 hover:text-black transition-colors"
                     >
                         ✕
                     </button>
                 </div>
-                <div className="space-y-1">
+                <div className="flex flex-col gap-1">
                     {navItems.map((item) => (
                         <Link
                             key={item.href}
                             href={item.href}
                             onClick={onClose}
-                            className={`block rounded-xl px-4 py-3 text-sm font-medium transition ${
+                            className={`px-3 py-2.5 text-sm font-medium transition-colors ${
                                 isActive(item.href)
-                                    ? "bg-primary/10 font-semibold text-primary"
-                                    : "text-slate-600 hover:bg-surface-container-low dark:text-slate-400"
+                                    ? "text-black font-semibold"
+                                    : "text-gray-500 hover:text-black"
                             }`}
                         >
                             {item.label}
                         </Link>
                     ))}
+                </div>
+                <div className="mt-6 border-t border-gray-100 pt-6">
+                    <button
+                        type="button"
+                        className="w-full rounded-md bg-black px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-gray-900"
+                    >
+                        Sign In
+                    </button>
                 </div>
             </div>
         </div>
