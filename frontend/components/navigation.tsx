@@ -11,10 +11,7 @@ export function Navigation() {
 
     const navItems = [
         { href: "/home", label: "Home" },
-        { href: "/search", label: "Search" },
-        { href: "/tracker", label: "Tracker" },
-        { href: "/intelligence", label: "Intelligence" },
-        { href: "/chat", label: "Chat" },
+        { href: "/applications", label: "Applications" },
     ];
 
     const isActive = (href: string) => {
@@ -28,9 +25,9 @@ export function Navigation() {
                 <Link
                     href="/"
                     className="text-lg font-bold tracking-tighter text-black"
-                    title="Budenfinder home"
+                    title="Flat4U home"
                 >
-                    Budenfinder
+                    Flat4U
                 </Link>
 
                 <div className="hidden items-center gap-8 md:flex">
@@ -65,10 +62,6 @@ export function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
 
     const navItems = [
         { href: "/home", label: "Home" },
-        { href: "/search", label: "Search" },
-        { href: "/tracker", label: "Tracker" },
-        { href: "/intelligence", label: "Intelligence" },
-        { href: "/chat", label: "Chat" },
     ];
 
     const isActive = (href: string) => {
@@ -86,7 +79,7 @@ export function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="mb-6 flex items-center justify-between">
-                    <span className="text-lg font-bold tracking-tighter text-black">Budenfinder</span>
+                    <span className="text-lg font-bold tracking-tighter text-black">Flat4U</span>
                     <button
                         type="button"
                         onClick={onClose}

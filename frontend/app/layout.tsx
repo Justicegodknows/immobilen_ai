@@ -17,9 +17,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Budenfinder | AI-powered Berlin rental search",
+  title: "Flat4U | AI-powered Berlin rental search",
   description:
-    "Budenfinder — AI-powered rental discovery, application tools, and market insights for Berlin tenants.",
+    "Flat4U — AI-powered rental discovery, application tools, and market insights for Berlin tenants.",
 };
 
 export default function RootLayout({
