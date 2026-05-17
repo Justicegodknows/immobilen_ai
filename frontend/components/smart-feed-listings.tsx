@@ -6,6 +6,7 @@ import { getListings } from "@/lib/api";
 import { scoreListing, type SmartFeedFilter } from "@/lib/smart-feed";
 import { COMPANY_BASE_URLS } from "@/lib/company-urls";
 import type { Listing } from "@/lib/types";
+import { roundNum } from "@/lib/numbers";
 
 function ScoreBadge({ score }: { score: number }) {
     if (score >= 80) {
@@ -33,8 +34,8 @@ function ScoreBadge({ score }: { score: number }) {
 }
 
 function displayRent(listing: Listing): string {
-    if (listing.warmRentAmount != null) return `€${listing.warmRentAmount}`;
-    if (listing.coldRentAmount != null) return `€${listing.coldRentAmount}`;
+    if (listing.warmRentAmount != null) return `€${roundNum(listing.warmRentAmount)}`;
+    if (listing.coldRentAmount != null) return `€${roundNum(listing.coldRentAmount)}`;
     return "N/A";
 }
 

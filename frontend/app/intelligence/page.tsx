@@ -7,6 +7,7 @@ import { calculatePriceAssessment } from "@/lib/scoring";
 import { NeighborhoodMapResponse } from "@/lib/types";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { roundNum } from "@/lib/numbers";
 
 const BerlinNeighborhoodMap = dynamic(
     () => import("@/components/berlin-neighborhood-map").then((mod) => mod.BerlinNeighborhoodMap),
@@ -31,7 +32,7 @@ const districtStats = Object.entries(districtRentBenchmarkPerM2).map(([district,
     pricePerM2,
     avgRent: pricePerM2 * 55, // avg 55m2
     listings: berlinListings.filter((l) => l.city === district || (l.address && l.address.includes(district))).length,
-    trend: ((((i * 7 + 3) % 13) - 5) * 0.8).toFixed(2),
+    trend: roundNum((((i * 7 + 3) % 13) - 5) * 0.8),
 }));
 
 export default function IntelligencePage() {
@@ -352,11 +353,11 @@ export default function IntelligencePage() {
                                     {districtStats.map((stat) => (
                                         <tr key={stat.district} className="">
                                             <td className="py-3 font-medium text-on-background">{stat.district}</td>
-                                            <td className="py-3 text-muted">€{parseFloat(stat.pricePerM2.toFixed(2))}/m²</td>
-                                            <td className="py-3 text-muted">€{parseFloat(stat.avgRent.toFixed(2))}</td>
+                                            <td className="py-3 text-muted">€{roundNum(stat.pricePerM2)}/m²</td>
+                                            <td className="py-3 text-muted">€{roundNum(stat.avgRent)}</td>
                                             <td className="py-3 text-muted">{stat.listings}</td>
-                                            <td className={`py-3 ${Number(stat.trend) > 0 ? "text-red-600" : "text-green-600"}`}>
-                                                {Number(stat.trend) > 0 ? "↑" : "↓"} {Math.abs(Number(stat.trend))}%
+                                            <td className={`py-3 ${stat.trend > 0 ? "text-red-600" : "text-green-600"}`}>
+                                                {stat.trend > 0 ? "↑" : "↓"} {Math.abs(stat.trend)}%
                                             </td>
                                             <td className="py-3">
                                                 <Link
@@ -385,22 +386,22 @@ export default function IntelligencePage() {
                             <div className="flex items-start justify-between">
                                 <h3 className="font-semibold text-on-background">{stat.district}</h3>
                                 <span
-                                    className={`rounded-full px-2 py-1 text-xs font-medium ${Number(stat.trend) > 0
+                                    className={`rounded-full px-2 py-1 text-xs font-medium ${stat.trend > 0
                                         ? "bg-red-100 text-red-700"
                                         : "bg-green-100 text-green-700"
                                         }`}
                                 >
-                                    {Number(stat.trend) > 0 ? "↑" : "↓"} {Math.abs(Number(stat.trend))}%
+                                    {stat.trend > 0 ? "↑" : "↓"} {Math.abs(stat.trend)}%
                                 </span>
                             </div>
                             <div className="mt-4 space-y-2">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted">Price/m²</span>
-                                    <span className="font-medium text-on-background">€{parseFloat(stat.pricePerM2.toFixed(2))}</span>
+                                    <span className="font-medium text-on-background">€{roundNum(stat.pricePerM2)}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted">Avg Rent</span>
-                                    <span className="font-medium text-on-background">€{parseFloat(stat.avgRent.toFixed(2))}</span>
+                                    <span className="font-medium text-on-background">€{roundNum(stat.avgRent)}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted">Active Listings</span>
@@ -529,7 +530,7 @@ function MetricCard({
                         : "bg-red-100 text-red-700"
                         }`}
                 >
-                    {isPositiveTrend ? "↑" : "↓"} {parseFloat(Math.abs(trend).toFixed(2))}%
+                    {isPositiveTrend ? "↑" : "↓"} {roundNum(Math.abs(trend))}%
                 </div>
             </div>
             <p className="mt-3 text-2xl font-bold text-on-background">{value}</p>

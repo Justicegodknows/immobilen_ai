@@ -1,4 +1,5 @@
 import type { Listing } from '@prisma/client';
+import { roundNum } from '@/lib/numbers';
 import {
     getBezugsfertigkeit,
     lookupMietspiegel,
@@ -115,7 +116,7 @@ export function calculateMietpreisbremseAssessment(
         if (warm === null) return null;
         coldRentAmount = Math.max(0, warm - operatingCostsPerM2 * areaM2);
         assumptions.push(
-            `Cold rent estimated from warm rent using ${operatingCostsPerM2.toFixed(2)} EUR/m2 operating costs.`,
+            `Cold rent estimated from warm rent using ${roundNum(operatingCostsPerM2)} EUR/m2 operating costs.`,
         );
     }
 
@@ -144,10 +145,10 @@ export function calculateMietpreisbremseAssessment(
         return null;
     }
 
-    const coldRentPerM2 = Math.round((coldRentAmount / areaM2) * 100) / 100;
+    const coldRentPerM2 = roundNum(coldRentAmount / areaM2);
     const maxLegalPerM2Value = maxLegalRentPerM2(entry);
-    const differencePerM2 = Math.round((coldRentPerM2 - maxLegalPerM2Value) * 100) / 100;
-    const overpaymentMonthlyEur = Math.max(0, Math.round(differencePerM2 * areaM2 * 100) / 100);
+    const differencePerM2 = roundNum(coldRentPerM2 - maxLegalPerM2Value);
+    const overpaymentMonthlyEur = Math.max(0, roundNum(differencePerM2 * areaM2));
 
     const verdict =
         differencePerM2 <= 0
@@ -161,7 +162,7 @@ export function calculateMietpreisbremseAssessment(
         assumptions,
         input: {
             areaM2,
-            coldRentEur: Math.round(coldRentAmount * 100) / 100,
+            coldRentEur: roundNum(coldRentAmount),
             coldRentPerM2,
             wohnlage,
             buildingYear,

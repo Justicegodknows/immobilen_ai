@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import type { OnboardingStorage } from "@/lib/types";
 import SmartFeedFilterPanel from "@/components/smart-feed-filter-panel";
@@ -14,52 +14,20 @@ import {
 
 const MAX_XP = 375;
 
-const FEATURE_CARDS = [
-    {
-        href: "/search",
-        icon: "travel_explore",
-        title: "Smart Feed",
-        description:
-            "AI-ranked listings matching your profile in real time.",
-    },
-    {
-        href: "/chat",
-        icon: "chat_bubble",
-        title: "AI Assistant",
-        description:
-            "Ask anything about Berlin renting, contracts, or your chances.",
-    },
-    {
-        href: "/intelligence",
-        icon: "insights",
-        title: "Intelligence",
-        description:
-            "District trends, rent cap analysis, and market predictions.",
-    },
-    {
-        href: "/tracker",
-        icon: "timeline",
-        title: "Application Tracker",
-        description:
-            "Full timeline, viewing reminders, and rejection analysis.",
-    },
-];
-
 export default function HomePage() {
-    const [stored, setStored] = useState<OnboardingStorage | null>(null);
-    const [smartFeedFilters, setSmartFeedFilters] = useState<SmartFeedFilter>(DEFAULT_SMART_FEED);
-    const [feedPanelOpen, setFeedPanelOpen] = useState(false);
-
-    useEffect(() => {
+    const [stored] = useState<OnboardingStorage | null>(() => {
+        if (typeof window === "undefined") return null;
         try {
             const raw = localStorage.getItem("budenfinder.onboarding");
-            if (raw) setStored(JSON.parse(raw) as OnboardingStorage);
-        } catch {}
-    }, []);
-
-    useEffect(() => {
-        setSmartFeedFilters(loadSmartFeedFilter());
-    }, []);
+            return raw ? (JSON.parse(raw) as OnboardingStorage) : null;
+        } catch {
+            return null;
+        }
+    });
+    const [smartFeedFilters, setSmartFeedFilters] = useState<SmartFeedFilter>(() =>
+        typeof window === "undefined" ? DEFAULT_SMART_FEED : loadSmartFeedFilter()
+    );
+    const [feedPanelOpen, setFeedPanelOpen] = useState(false);
 
     const xp = stored?.totalXp ?? 0;
     const name = stored?.name;
@@ -112,42 +80,6 @@ export default function HomePage() {
                                 Complete onboarding →
                             </Link>
                         )}
-                    </div>
-                </div>
-            </section>
-
-            {/* ── Feature cards ── */}
-            <section className="px-6 py-14 md:py-16 md:px-10 lg:px-16">
-                <div className="max-w-5xl mx-auto">
-                    <p className="mb-8 font-mono text-xs uppercase tracking-[0.3em] text-gray-400">
-                        Your Tools
-                    </p>
-                    <div className="grid border-t border-l border-gray-200 sm:grid-cols-2 lg:grid-cols-4">
-                        {FEATURE_CARDS.map((card) => (
-                            <Link
-                                key={card.href}
-                                href={card.href}
-                                className="group cursor-default flex flex-col gap-5 border-b border-r border-gray-200 bg-white p-8 transition-colors duration-200 hover:bg-gray-50 md:p-10"
-                            >
-                                <span
-                                    className="material-symbols-outlined text-black transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-0.5"
-                                    style={{ fontSize: "28px", fontVariationSettings: '"FILL" 0, "wght" 300, "GRAD" 0, "opsz" 28' }}
-                                >
-                                    {card.icon}
-                                </span>
-                                <div className="flex-1">
-                                    <h3 className="mt-3 text-base font-bold text-black">
-                                        {card.title}
-                                    </h3>
-                                    <p className="mt-2 text-sm leading-relaxed text-gray-500">
-                                        {card.description}
-                                    </p>
-                                </div>
-                                <span className="mt-auto text-xs font-semibold text-[#3ecfa0] group-hover:underline">
-                                    Open →
-                                </span>
-                            </Link>
-                        ))}
                     </div>
                 </div>
             </section>
